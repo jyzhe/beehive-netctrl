@@ -51,20 +51,19 @@ func (b GraphBuilderCentralized) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 func (b GraphBuilderCentralized) Map(msg bh.Msg,
 	ctx bh.MapContext) bh.MappedCells {
 
-	// var from nom.UID
-	// switch dm := msg.Data().(type) {
-	// case nom.LinkAdded:
-	// 	from = dm.From
-	// case nom.LinkDeleted:
-	// 	from = dm.From
-	// default:
-	// 	return nil
-	// }
-	// // TODO(soheil): maybe store and update the matrix directly here.
-	// n, _ := nom.ParsePortUID(from)
-	// return bh.MappedCells{{GraphDict, string(n)}}
+	var from nom.UID
+	switch dm := msg.Data().(type) {
+	case nom.LinkAdded:
+		from = dm.From
+	case nom.LinkDeleted:
+		from = dm.From
+	default:
+		return nil
+	}
+	// TODO(soheil): maybe store and update the matrix directly here.
+	n, _ := nom.ParsePortUID(from)
+	return bh.MappedCells{{GraphDict, string(n)}}
 
-	return bh.MappedCells{{"__D__", "__0__"}}
 }
 
 // ShortestPathCentralized calculates the shortest path from node "from" to node
