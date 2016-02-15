@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	Mac2uidDict = "mac2uid"
+	mac2port = "mac2port"
 )
 
 // InstallRouting installs the routing application on bh.DefaultHive.
@@ -28,9 +28,6 @@ func InstallRouting(timeout time.Duration, h bh.Hive, opts ...bh.AppOption) {
 	builder := discovery.GraphBuilderCentralized{}
 	app.Handle(nom.LinkAdded{}, builder)
 	app.Handle(nom.LinkDeleted{}, builder)
-
-	app.Handle(nom.NodeJoined{}, nodeJoinedHandler2{})
-	app.Handle(nom.NodeLeft{}, nodeLeftHandler2{})
 
     fmt.Println("Installing Router....")
 }
@@ -47,37 +44,83 @@ func (r Router) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 	src := in.Packet.SrcMAC()
 	dst := in.Packet.DstMAC()
 
+	d := ctx.Dict(mac2port)
+
 	if dst.IsLLDP() {
-		fmt.Println("Router Rcv: Received LLDP")
+		// fmt.Printf("Router Rcv: Received LLDP from %v to %v\n", src, dst)
 		return nil
+	}
+
+	// Save the endhost info
+	srck := src.Key()
+	if _, get_err := d.Get(srck); get_err != nil {
+		fmt.Printf("Router Rcv: Saving %v, %v to dict (%v)\n", srck, in.InPort, get_err)
+		if put_err := d.Put(srck, in.InPort); put_err != nil {
+			fmt.Println("****Router Rcv: Save source error!")
+		}
 	}
 
 	if dst.IsBroadcast() || dst.IsMulticast() {
-		fmt.Println("Router Rcv: Received Broadcast or Multicast")
+		// fmt.Printf("Router Rcv: Received Broadcast or Multicast from %v to %v, innode is %v, %v\n", src, dst, in.Node, in.InPort)
 		return r.Hub.Rcv(msg, ctx)
 	}
 
-	fmt.Println("Router Rcv: Received packet in....")
-	d := ctx.Dict(Mac2uidDict)
-	srck := src.Key()
-	sv, err := d.Get(srck);
-	if err != nil {
-		fmt.Printf("Router Rcv: Cant find source node %v\n", srck)
-		return nil
-	}
-	s_id := sv.(nom.UID)
+	// fmt.Printf("Router Rcv: Received packet in from %v to %v, innode is %v, %v\n", src, dst, in.Node, in.InPort)
+
+	sn := in.Node
 
 	dstk := dst.Key()
-	dv, err := d.Get(dstk);
+	dv, err := d.Get(dstk)
 	if  err != nil {
 		fmt.Printf("Router Rcv: Cant find dest node %v\n", dstk)
 		return nil
 	}
-	d_id := dv.(nom.UID)
+	dn,_ := nom.ParsePortUID(dv.(nom.UID))
 
-	paths, _ := discovery.ShortestPathCentralized(s_id, d_id, ctx)
+	paths, len := discovery.ShortestPathCentralized(sn, nom.UID(dn), ctx)
 
-	fmt.Printf("Router Rcv: Path returns %v\n", paths)
+	// fmt.Printf("Router Rcv: Path between %v and %v returns %v, %v\n", sn, nom.UID(dn), paths, len)
+
+	p := dv.(nom.UID)
+	if len > 0 {
+		shortest := paths[0]
+		p = shortest[0].From
+
+		// add reverse flow entry
+		add := nom.AddFlowEntry{
+			Flow: nom.FlowEntry{
+				Node: in.Node,
+				Match: nom.Match{
+					Fields: []nom.Field{
+						nom.EthDst{
+							Addr: src,
+							Mask: nom.MaskNoneMAC,
+						},
+					},
+				},
+				Actions: []nom.Action{
+					nom.ActionForward{
+						Ports: []nom.UID{in.InPort},
+					},
+				},
+			},
+		}
+		ctx.Reply(msg, add)
+	}
+
+	out := nom.PacketOut{
+		Node:     in.Node,
+		InPort:   in.InPort,
+		BufferID: in.BufferID,
+		Packet:   in.Packet,
+		Actions: []nom.Action{
+			nom.ActionForward{
+				Ports: []nom.UID{p},
+			},
+		},
+	}
+	ctx.Reply(msg, out)
+
     return nil
 
 }
@@ -86,55 +129,7 @@ func (r Router) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 // based on their source node.
 func (r Router) Map(msg bh.Msg, ctx bh.MapContext) bh.MappedCells {
 
-	return bh.MappedCells{{"N", string(msg.Data().(nom.PacketIn).Node)}}
+	// return bh.MappedCells{{"N", string(msg.Data().(nom.PacketIn).Node)}}
+	return bh.MappedCells{{"__D__", "__0__"}}
 
-}
-
-
-type nodeJoinedHandler2 struct {}
-
-func (h nodeJoinedHandler2) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
-
-	joined := msg.Data().(nom.NodeJoined)
-	d := ctx.Dict(Mac2uidDict)
-	n := nom.Node(joined)
-	k := n.MACAddr.Key()
-	fmt.Printf("Router: Adding %v to dict\n", k)
-	if _, err := d.Get(k); err == nil {
-		return nil
-	}
-
-	return d.Put(k, string(n.UID()))
-
-}
-
-func (h nodeJoinedHandler2) Map(msg bh.Msg, ctx bh.MapContext) bh.MappedCells {
-
-	joined := msg.Data().(nom.NodeJoined)
-	n := nom.Node(joined)
-
-	return bh.MappedCells{{"N", string(n.UID())}}
-}
-
-type nodeLeftHandler2 struct {}
-
-func (h nodeLeftHandler2) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
-	left := msg.Data().(nom.NodeLeft)
-	d := ctx.Dict(Mac2uidDict)
-	n := nom.Node(left)
-	k := n.MACAddr.Key()
-	if _, err := d.Get(k); err != nil {
-		return fmt.Errorf("%v is not joined", n)
-	}
-	d.Del(k)
-	return nil
-
-}
-
-func (h nodeLeftHandler2) Map(msg bh.Msg, ctx bh.MapContext) bh.MappedCells {
-
-	left := msg.Data().(nom.NodeLeft)
-	n := nom.Node(left)
-
-	return bh.MappedCells{{"N", string(n.UID())}}
 }

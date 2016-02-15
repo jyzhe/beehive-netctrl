@@ -13,11 +13,12 @@ from mininet.topo import Topo
 
 class ThreeLayerTopo(Topo):
 
-    def __init__(self, k=4, **opts):
+    def __init__(self, k=2, **opts):
 
         Topo.__init__(self, **opts)
 
         self.k = k
+        switchCount = 1
 
         hosts   = []
         aggr    = []
@@ -25,17 +26,21 @@ class ThreeLayerTopo(Topo):
         core    = []
 
         for i in range(k):
-            core.append(self.addSwitch('c%s' % i))
+            core.append(self.addSwitch('s%s' % switchCount))
+            switchCount += 1
 
+        # Create the pods
         for i in range(k):
 
             # Adding aggregation switches
             for j in range(2):
-                aggr.append(self.addSwitch('a%d'%(i * 2 + j)))
+                aggr.append(self.addSwitch('s%d'%(switchCount)))
+                switchCount += 1
 
             # Adding ToR switches
             for j in range(2):
-                tor.append(self.addSwitch('t%d'%(i * 2 + j)))
+                tor.append(self.addSwitch('s%d'%(switchCount)))
+                switchCount += 1
 
             # Adding hosts
             for j in range(4):
@@ -51,7 +56,7 @@ class ThreeLayerTopo(Topo):
             self.addLink(aggr[i * 2], tor[i * 2 + 1])
             self.addLink(aggr[i * 2 + 1], tor[i * 2 + 1])
 
-        # Connect aggr to core
+        # Connect pods to core
         for i in range(k * 2):
 
             idx = 0 if i % 2 == 0 else k / 2

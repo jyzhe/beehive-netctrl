@@ -9,15 +9,18 @@ import (
 
 func TestGraphBuilderCentralizedSinglePath(t *testing.T) {
 	links := []nom.Link{
-		{From: "n1$$1", To: "n2$$1"},
-		{From: "n1$$2", To: "n3$$1"},
-		{From: "n2$$2", To: "n4$$1"},
-		{From: "n3$$2", To: "n5$$1"},
-		{From: "n4$$2", To: "n5$$2"},
-		{From: "n5$$3", To: "n6$$1"},
-		{From: "n4$$3", To: "n6$$2"},
-		{From: "n6$$1", To: "n5$$3"},
-		{From: "n6$$2", To: "n4$$3"},
+		{From: "n2$$1", To: "n1$$1"},
+		{From: "n6$$2", To: "n5$$1"},
+		{From: "n5$$2", To: "n1$$1"},
+		{From: "n5$$2", To: "n6$$1"},
+		{From: "n7$$2", To: "n5$$2"},
+		{From: "n4$$3", To: "n2$$1"},
+		{From: "n3$$3", To: "n2$$2"},
+		{From: "n1$$1", To: "n2$$3"},
+		{From: "n1$$2", To: "n5$$3"},
+		{From: "n5$$3", To: "n7$$2"},
+		{From: "n2$$1", To: "n4$$3"},
+		{From: "n2$$2", To: "n3$$3"},
 	}
 	b := GraphBuilderCentralized{}
 	ctx := &bh.MockRcvContext{}
@@ -27,12 +30,12 @@ func TestGraphBuilderCentralizedSinglePath(t *testing.T) {
 		}
 		b.Rcv(msg, ctx)
 	}
-	paths, l := ShortestPathCentralized("n1", "n6", ctx)
-	if l != 3 {
-		t.Errorf("invalid shortest path between n1 and n6: actual=%d want=3", l)
+	paths, l := ShortestPathCentralized("n3", "n1", ctx)
+	if l != 2 {
+		t.Errorf("invalid shortest path between n1 and n6: actual=%d want=2", l)
 	}
-	if len(paths) != 2 {
-		t.Errorf("invalid number of paths between n1 and n6: actual=%d want=2",
+	if len(paths) != 1 {
+		t.Errorf("invalid number of paths between n1 and n6: actual=%d want=1",
 			len(paths))
 	}
 	for _, p := range paths {

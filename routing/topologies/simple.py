@@ -31,9 +31,11 @@ class SimpleTopo(Topo):
         for i in range(4):
             self.addLink(hosts[i], sw[i])
 
-        for i in range(4):
-            for j in range(4):
-                if i != j:
-                    self.addLink(sw[i], sw[j])
+        self.addLink(sw[0], sw[1])
+        self.addLink(sw[0], sw[2])
+        self.addLink(sw[0], sw[3])
+        self.addLink(sw[1], sw[2])
+        self.addLink(sw[1], sw[3])
+        self.addLink(sw[2], sw[3])
 
 topos = { 'simple': ( lambda: SimpleTopo() ) }

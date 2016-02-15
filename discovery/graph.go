@@ -12,10 +12,7 @@ import (
 
 const (
 	GraphDict = "NetGraph"
-	Mac2uidDict = "mac2uid"
 )
-
-type graphMap map[nom.UID][]nom.Link
 
 // GraphBuilderCentralized is a handler that builds a centralized graph of the
 // network topology. This handler is only useful for centralized applications.
@@ -36,15 +33,15 @@ func (b GraphBuilderCentralized) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
 	nf, _ := nom.ParsePortUID(link.From)
 	nt, _ := nom.ParsePortUID(link.To)
-
+	fmt.Printf("Adding a link between %v and %v\n", string(nf), string(nt))
 	if nf == nt {
 		return fmt.Errorf("%v is a loop", link)
 	}
 
 	k := string(nf)
-	links := make(graphMap)
+	links := make(map[nom.UID][]nom.Link)
 	if v, err := dict.Get(k); err == nil {
-		links = v.(graphMap)
+		links = v.(map[nom.UID][]nom.Link)
 	}
 	links[nt.UID()] = append(links[nt.UID()], link)
 
@@ -54,18 +51,20 @@ func (b GraphBuilderCentralized) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 func (b GraphBuilderCentralized) Map(msg bh.Msg,
 	ctx bh.MapContext) bh.MappedCells {
 
-	var from nom.UID
-	switch dm := msg.Data().(type) {
-	case nom.LinkAdded:
-		from = dm.From
-	case nom.LinkDeleted:
-		from = dm.From
-	default:
-		return nil
-	}
-	// TODO(soheil): maybe store and update the matrix directly here.
-	n, _ := nom.ParsePortUID(from)
-	return bh.MappedCells{{GraphDict, string(n)}}
+	// var from nom.UID
+	// switch dm := msg.Data().(type) {
+	// case nom.LinkAdded:
+	// 	from = dm.From
+	// case nom.LinkDeleted:
+	// 	from = dm.From
+	// default:
+	// 	return nil
+	// }
+	// // TODO(soheil): maybe store and update the matrix directly here.
+	// n, _ := nom.ParsePortUID(from)
+	// return bh.MappedCells{{GraphDict, string(n)}}
+
+	return bh.MappedCells{{"__D__", "__0__"}}
 }
 
 // ShortestPathCentralized calculates the shortest path from node "from" to node
@@ -227,5 +226,5 @@ func init() {
 	gob.Register(mentry{})
 	gob.Register(nodeAndDist{})
 	gob.Register(nodeAndDistSlice{})
-	gob.Register(graphMap{})
+	gob.Register(map[nom.UID][]nom.Link{})
 }
