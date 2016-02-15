@@ -76,6 +76,7 @@ func (np *nodePortsAndLinks) removeLink(link nom.Link) bool {
 type nodeJoinedHandler struct{}
 
 func (h *nodeJoinedHandler) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
+
 	joined := msg.Data().(nom.NodeJoined)
 	d := ctx.Dict(nodeDict)
 	n := nom.Node(joined)

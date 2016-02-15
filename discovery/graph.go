@@ -12,7 +12,10 @@ import (
 
 const (
 	GraphDict = "NetGraph"
+	Mac2uidDict = "mac2uid"
 )
+
+type graphMap map[nom.UID][]nom.Link
 
 // GraphBuilderCentralized is a handler that builds a centralized graph of the
 // network topology. This handler is only useful for centralized applications.
@@ -39,11 +42,12 @@ func (b GraphBuilderCentralized) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 	}
 
 	k := string(nf)
-	links := make(map[nom.UID][]nom.Link)
+	links := make(graphMap)
 	if v, err := dict.Get(k); err == nil {
-		links = v.(map[nom.UID][]nom.Link)
+		links = v.(graphMap)
 	}
 	links[nt.UID()] = append(links[nt.UID()], link)
+
 	return dict.Put(k, links)
 }
 
@@ -223,4 +227,5 @@ func init() {
 	gob.Register(mentry{})
 	gob.Register(nodeAndDist{})
 	gob.Register(nodeAndDistSlice{})
+	gob.Register(graphMap{})
 }

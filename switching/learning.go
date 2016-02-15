@@ -1,6 +1,7 @@
 package switching
 
 import (
+	"fmt"
 	bh "github.com/kandoo/beehive"
 	"github.com/kandoo/beehive-netctrl/nom"
 	"github.com/kandoo/beehive/Godeps/_workspace/src/github.com/golang/glog"
@@ -22,9 +23,10 @@ func (h LearningSwitch) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 	}
 
 	if dst.IsBroadcast() || dst.IsMulticast() {
+		fmt.Printf("Rcv: BroadCast or Multicast from %v to %v\n", src, dst)
 		return h.Hub.Rcv(msg, ctx)
 	}
-
+	fmt.Printf("Rcv: packet in from %v to %v\n", src, dst)
 	d := ctx.Dict("mac2port")
 	srck := src.Key()
 	update := false
