@@ -9,6 +9,8 @@ Start up a fat tree topology with multiple paths among hosts. The tree has a
 3-layer hierarchical structure.
 """
 
+import sys
+
 from mininet.net import Mininet
 from mininet.topo import Topo
 from mininet.log import setLogLevel
@@ -69,9 +71,8 @@ class ThreeLayerTopo(Topo):
 
 topos = { 'mytopo': ( lambda: ThreeLayerTopo() ) }
 
-if __name__ == "__main__":
+def test_routing():
 
-    setLogLevel('info')
     fattree = ThreeLayerTopo()
     controller = RemoteController(name="beehive-netctrl", ip="127.0.0.1", port=6633)
     net = Mininet(topo=fattree, controller=controller,
@@ -79,3 +80,19 @@ if __name__ == "__main__":
     net.start()
     CLI(net)
     net.stop()
+
+def test_loadbalancing():
+    pass
+
+if __name__ == "__main__":
+
+    setLogLevel('info')
+
+    if len(sys.argv) != 2:
+        print("Usage: fattree.py routing|loadbalancing")
+        sys.exit()
+
+    if sys.argv[1] == 'routing':
+        test_routing()
+    else:
+        test_loadbalancing()
