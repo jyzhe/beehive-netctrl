@@ -74,23 +74,21 @@ class ThreeLayerTopo(Topo):
 
 topos = { 'mytopo': ( lambda: ThreeLayerTopo() ) }
 
-def test_routing():
+def start_mininet():
 
     fattree = ThreeLayerTopo()
     controller = RemoteController(name="beehive-netctrl", ip="127.0.0.1", port=6633)
     net = Mininet(topo=fattree, controller=controller,
                   autoSetMacs=True, autoStaticArp=True)
     net.start()
+
+    print "Performing prelimilary testing...."
+    pre_test(net)
+
     CLI(net)
     net.stop()
 
-def test_loadbalancing():
-
-    fattree = ThreeLayerTopo()
-    controller = RemoteController(name="beehive-netctrl", ip="127.0.0.1", port=6633)
-    net = Mininet(topo=fattree, controller=controller,
-                  autoSetMacs=True, autoStaticArp=True)
-    net.start()
+def pre_test(net):
 
     print "Waiting for the controller to complete handshake..."
     sleep(5)
@@ -112,18 +110,8 @@ def test_loadbalancing():
            for p in popens.values():
              p.send_signal( SIGINT )
 
-    CLI(net)
-    net.stop()
-
 if __name__ == "__main__":
 
     setLogLevel('info')
 
-    if len(sys.argv) != 2:
-        print("Usage: fattree.py routing|loadbalancing")
-        sys.exit()
-
-    if sys.argv[1] == 'routing':
-        test_routing()
-    else:
-        test_loadbalancing()
+    start_mininet()

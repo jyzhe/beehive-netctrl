@@ -74,7 +74,7 @@ func (r LoadBalancer) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
                 }
 			}
 
-            fmt.Printf("Load Balancer: Path between %v and %v returns %v, %v\n", sn, nom.UID(dn), opt_path, len(opt_path))
+            fmt.Printf("Load Balancer: Routing flow from %v to %v - %v, %v\n", sn, nom.UID(dn), opt_path, len(opt_path))
             p = opt_path[0].From
 		}
 
