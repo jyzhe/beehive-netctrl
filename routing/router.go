@@ -9,10 +9,6 @@ import (
     "github.com/jyzhe/beehive-netctrl/discovery"
 )
 
-const (
-	mac2port = "mac2port"
-)
-
 // Router is the main handler of the routing application.
 type Router struct{
 	// switching.Hub
@@ -22,6 +18,8 @@ type Router struct{
 func (r Router) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
 	switch msg.Data().(type) {
+	case setup:
+		return routing_setup(ctx)
 	case nom.LinkAdded:
 		return r.GraphBuilderCentralized.Rcv(msg, ctx)
 	case nom.LinkDeleted:
@@ -41,7 +39,7 @@ func (r Router) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 		srck := src.Key()
 		_, src_err := d.Get(srck)
 		if src_err != nil {
-			registerEndhosts(ctx)
+			fmt.Printf("Router: Error retrieving hosts %v\n", src)
 		}
 
 		if dst.IsBroadcast() || dst.IsMulticast() {
@@ -71,58 +69,59 @@ func (r Router) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 				} else {
 
 					p = path[0].From
-					if src_err == nil {
-
-						// Forward flow entry
-						add_forward := nom.AddFlowEntry{
-							Flow: nom.FlowEntry{
-								Node: in.Node,
-								Match: nom.Match{
-									Fields: []nom.Field{
-										nom.EthDst{
-											Addr: dst,
-											Mask: nom.MaskNoneMAC,
-										},
-									},
-								},
-								Actions: []nom.Action{
-									nom.ActionForward{
-										Ports: []nom.UID{p},
-									},
-								},
-							},
-						}
-						ctx.Reply(msg, add_forward)
-
-					}
-
-					if dst_err == nil {
-
-						// Reverse flow entry
-						add_reverse := nom.AddFlowEntry{
-							Flow: nom.FlowEntry{
-								Node: in.Node,
-								Match: nom.Match{
-									Fields: []nom.Field{
-										nom.EthDst{
-											Addr: src,
-											Mask: nom.MaskNoneMAC,
-										},
-									},
-								},
-								Actions: []nom.Action{
-									nom.ActionForward{
-										Ports: []nom.UID{in.InPort},
-									},
-								},
-							},
-						}
-						ctx.Reply(msg, add_reverse)
-
-					}
 					break
 				}
 			}
+		}
+
+		if src_err == nil {
+
+			// Forward flow entry
+			add_forward := nom.AddFlowEntry{
+				Flow: nom.FlowEntry{
+					Node: in.Node,
+					Match: nom.Match{
+						Fields: []nom.Field{
+							nom.EthDst{
+								Addr: dst,
+								Mask: nom.MaskNoneMAC,
+							},
+						},
+					},
+					Actions: []nom.Action{
+						nom.ActionForward{
+							Ports: []nom.UID{p},
+						},
+					},
+				},
+			}
+			ctx.Reply(msg, add_forward)
+
+		}
+
+		if dst_err == nil {
+
+			// Reverse flow entry
+			add_reverse := nom.AddFlowEntry{
+				Flow: nom.FlowEntry{
+					Node: in.Node,
+					Match: nom.Match{
+						Fields: []nom.Field{
+							nom.EthDst{
+								Addr: src,
+								Mask: nom.MaskNoneMAC,
+							},
+						},
+					},
+					Actions: []nom.Action{
+						nom.ActionForward{
+							Ports: []nom.UID{in.InPort},
+						},
+					},
+				},
+			}
+			ctx.Reply(msg, add_reverse)
+
 		}
 
 		out := nom.PacketOut{

@@ -10,12 +10,15 @@ Start up a fat tree topology with multiple paths among hosts. The tree has a
 """
 
 import sys
+from time import sleep, time
 
 from mininet.net import Mininet
 from mininet.topo import Topo
 from mininet.log import setLogLevel
 from mininet.node import RemoteController
 from mininet.cli import CLI
+from mininet.util import pmonitor
+from signal import SIGINT
 
 class ThreeLayerTopo(Topo):
 
@@ -82,7 +85,35 @@ def test_routing():
     net.stop()
 
 def test_loadbalancing():
-    pass
+
+    fattree = ThreeLayerTopo()
+    controller = RemoteController(name="beehive-netctrl", ip="127.0.0.1", port=6633)
+    net = Mininet(topo=fattree, controller=controller,
+                  autoSetMacs=True, autoStaticArp=True)
+    net.start()
+
+    print "Waiting for the controller to complete handshake..."
+    sleep(5)
+
+    popens = {}
+    hosts = net.hosts
+
+    print "Flow 1: h0 starting to ping h6..."
+    popens[hosts[0]] = hosts[0].popen('ping', hosts[6].IP())
+    sleep(1)
+    print "Flow 2: h1 starting to ping h7..."
+    popens[hosts[1]] = hosts[1].popen('ping', hosts[7].IP())
+
+    endTime = time() + 10
+    for h, line in pmonitor( popens, timeoutms=500 ):
+        if h:
+           print 'Flow %d: %s' % ( hosts.index(h) + 1, line ),
+        if time() >= endTime:
+           for p in popens.values():
+             p.send_signal( SIGINT )
+
+    CLI(net)
+    net.stop()
 
 if __name__ == "__main__":
 

@@ -43,6 +43,7 @@ func main() {
 	// or a hub:
 	// switching.RegisterHub(h, bh.NonTransactional())
 
-	routing.InstallRouting(h, bh.Persistent(1))
+	// routing.InstallRouter(h, bh.Persistent(11))
+	routing.InstallLoadBalancer(h, bh.Persistent(1))
 	h.Start()
 }
