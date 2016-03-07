@@ -7,7 +7,7 @@ import (
 	"runtime/pprof"
 	"time"
 
-	bh "github.com/jyzhe/beehive"
+	bh "github.com/kandoo/beehive"
 	"github.com/jyzhe/beehive-netctrl/controller"
 	"github.com/jyzhe/beehive-netctrl/discovery"
 	"github.com/jyzhe/beehive-netctrl/openflow"

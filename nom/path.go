@@ -3,7 +3,7 @@ package nom
 import (
 	"encoding/gob"
 
-	bh "github.com/jyzhe/beehive"
+	bh "github.com/kandoo/beehive"
 )
 
 // Path is a logical sequence of pathlets, where pathlet[i+1] will match the

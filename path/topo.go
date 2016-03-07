@@ -1,10 +1,10 @@
 package path
 
 import (
-	bh "github.com/jyzhe/beehive"
+	bh "github.com/kandoo/beehive"
 	"github.com/jyzhe/beehive-netctrl/discovery"
 	"github.com/jyzhe/beehive-netctrl/nom"
-	"github.com/jyzhe/beehive/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/kandoo/beehive/Godeps/_workspace/src/github.com/golang/glog"
 )
 
 func inPortsFromOutPorts(outport []nom.UID, ctx bh.RcvContext) (

@@ -4,9 +4,9 @@ import (
 	"errors"
 	"net"
 
-	bh "github.com/jyzhe/beehive"
+	bh "github.com/kandoo/beehive"
 	"github.com/jyzhe/beehive-netctrl/openflow/of"
-	"github.com/jyzhe/beehive/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/kandoo/beehive/Godeps/_workspace/src/github.com/golang/glog"
 )
 
 type ofListener struct {

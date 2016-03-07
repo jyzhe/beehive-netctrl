@@ -1,7 +1,7 @@
 package controller
 
 import (
-	bh "github.com/jyzhe/beehive"
+	bh "github.com/kandoo/beehive"
 	"github.com/jyzhe/beehive-netctrl/nom"
 )
 

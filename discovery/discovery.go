@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	bh "github.com/jyzhe/beehive"
+	bh "github.com/kandoo/beehive"
 	"github.com/jyzhe/beehive-netctrl/net/ethernet"
 	"github.com/jyzhe/beehive-netctrl/nom"
-	"github.com/jyzhe/beehive/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/kandoo/beehive/Godeps/_workspace/src/github.com/golang/glog"
 )
 
 const (

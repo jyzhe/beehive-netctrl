@@ -3,9 +3,9 @@ package controller
 import (
 	"time"
 
-	"github.com/jyzhe/beehive/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/kandoo/beehive/Godeps/_workspace/src/github.com/golang/glog"
 
-	bh "github.com/jyzhe/beehive"
+	bh "github.com/kandoo/beehive"
 )
 
 type HealthChecker struct{}

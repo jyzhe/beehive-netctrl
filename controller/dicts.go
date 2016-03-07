@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	bh "github.com/jyzhe/beehive"
+	bh "github.com/kandoo/beehive"
 	"github.com/jyzhe/beehive-netctrl/nom"
-	"github.com/jyzhe/beehive/state"
+	"github.com/kandoo/beehive/state"
 )
 
 const (

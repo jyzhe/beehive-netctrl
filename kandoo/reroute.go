@@ -3,7 +3,7 @@ package kandoo
 import (
 	"fmt"
 
-	bh "github.com/jyzhe/beehive"
+	bh "github.com/kandoo/beehive"
 	"github.com/jyzhe/beehive-netctrl/nom"
 )
 

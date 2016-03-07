@@ -3,10 +3,10 @@ package openflow
 import (
 	"flag"
 
-	"github.com/jyzhe/beehive/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/jyzhe/beehive/bucket"
+	"github.com/kandoo/beehive/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/kandoo/beehive/bucket"
 
-	bh "github.com/jyzhe/beehive"
+	bh "github.com/kandoo/beehive"
 )
 
 var (
