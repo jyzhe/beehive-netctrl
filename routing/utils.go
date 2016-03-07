@@ -141,11 +141,11 @@ func calculate_load(ctx bh.RcvContext, path []nom.Link) int {
 
 }
 
-func SrcIP(p nom.Packet) IPv4Addr{
-    return IPv4Addr{p[26],p[27],p[28],p[29]}
+func SrcIP(p nom.Packet) nom.IPv4Addr{
+    return nom.IPv4Addr{p[26],p[27],p[28],p[29]}
 }
-func DstIP(p nom.Packet) IPv4Addr{
-    return IPv4Addr{p[30],p[31],p[32],p[33]}
+func DstIP(p nom.Packet) nom.IPv4Addr{
+    return nom.IPv4Addr{p[30],p[31],p[32],p[33]}
 }
 
 func Key(ip nom.IPv4Addr) string{
