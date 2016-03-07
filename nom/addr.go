@@ -176,10 +176,6 @@ func (ip IPv4Addr) AsCIDRMask() int {
 	return 0
 }
 
-func (ip IPv4Addr) Key() string{
-	return string(ip[:])
-}
-
 func (ip IPv4Addr) String() string {
 	return fmt.Sprintf("%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3])
 }

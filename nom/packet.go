@@ -45,12 +45,14 @@ func (p Packet) SrcMAC() MACAddr {
 	return MACAddr{p[6], p[7], p[8], p[9], p[10], p[11]}
 }
 
+// TODO(soheil): add code to parse ip addresses and tcp ports.
 func (p Packet) SrcIP() IPv4Addr {
-	return IPv4Addr{p[26], p[27], p[28], p[29]}
+	return MACAddr{p[26], p[27], p[28], p[29]}
 }
 
+// SrcMAC returns the source MAC address from the ethernet header.
 func (p Packet) DstIP() IPv4Addr {
-	return IPv4Addr{p[30], p[31], p[32], p[33]}
+	return MACAddr{p[30], p[31], p[32], p[33]}
 }
 // PacketBufferID represents a packet buffered in the switch.
 type PacketBufferID uint32
