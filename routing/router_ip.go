@@ -26,7 +26,7 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
         return r.GraphBuilderCentralized.Rcv(msg, ctx)
     default:
         in := msg.Data().(nom.PacketIn)
-        src := in.Packet.SrcMAC()
+        // src := in.Packet.SrcMAC()
         dst := in.Packet.DstMAC()
         src_ip := SrcIP(in.Packet)
         dst_ip := DstIP(in.Packet)
