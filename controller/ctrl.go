@@ -4,7 +4,7 @@ import (
 	"time"
 
 	bh "github.com/kandoo/beehive"
-	"github.com/jyzhe/beehive-netctrl/nom"
+	"github.com/kandoo/beehive-netctrl/nom"
 )
 
 func RegisterNOMController(h bh.Hive) {

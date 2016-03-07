@@ -8,9 +8,9 @@ import (
 	"time"
 
 	bh "github.com/kandoo/beehive"
-	"github.com/jyzhe/beehive-netctrl/controller"
+	"github.com/kandoo/beehive-netctrl/controller"
 	"github.com/jyzhe/beehive-netctrl/discovery"
-	"github.com/jyzhe/beehive-netctrl/openflow"
+	"github.com/kandoo/beehive-netctrl/openflow"
 	"github.com/jyzhe/beehive-netctrl/routing"
 	// "github.com/jyzhe/beehive-netctrl/switching"
 )

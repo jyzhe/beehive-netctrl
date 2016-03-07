@@ -1,8 +1,8 @@
 package openflow
 
 import (
-	"github.com/jyzhe/beehive-netctrl/nom"
-	"github.com/jyzhe/beehive-netctrl/openflow/of12"
+	"github.com/kandoo/beehive-netctrl/nom"
+	"github.com/kandoo/beehive-netctrl/openflow/of12"
 )
 
 func (d *of12Driver) handleRoleReply(r of12.RoleReply, c *ofConn) error {

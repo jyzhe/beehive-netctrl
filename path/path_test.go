@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	bh "github.com/kandoo/beehive"
-	"github.com/jyzhe/beehive-netctrl/discovery"
-	"github.com/jyzhe/beehive-netctrl/nom"
+	"github.com/kandoo/beehive-netctrl/discovery"
+	"github.com/kandoo/beehive-netctrl/nom"
 )
 
 func buildTopologyForTest() *bh.MockRcvContext {

@@ -3,8 +3,8 @@ package discovery
 import (
 	"errors"
 
-	"github.com/jyzhe/beehive-netctrl/net/lldp"
-	"github.com/jyzhe/beehive-netctrl/nom"
+	"github.com/kandoo/beehive-netctrl/net/lldp"
+	"github.com/kandoo/beehive-netctrl/nom"
 	bh "github.com/kandoo/beehive"
 )
 

@@ -4,11 +4,11 @@ import (
 	"flag"
 
 	bh "github.com/kandoo/beehive"
-	"github.com/jyzhe/beehive-netctrl/controller"
-	"github.com/jyzhe/beehive-netctrl/discovery"
-	"github.com/jyzhe/beehive-netctrl/kandoo"
-	"github.com/jyzhe/beehive-netctrl/openflow"
-	"github.com/jyzhe/beehive-netctrl/switching"
+	"github.com/kandoo/beehive-netctrl/controller"
+	"github.com/kandoo/beehive-netctrl/discovery"
+	"github.com/kandoo/beehive-netctrl/kandoo"
+	"github.com/kandoo/beehive-netctrl/openflow"
+	"github.com/kandoo/beehive-netctrl/switching"
 )
 
 var eThreshold = flag.Uint64("kandoo.thresh", 1024,
