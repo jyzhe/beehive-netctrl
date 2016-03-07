@@ -28,8 +28,8 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
         in := msg.Data().(nom.PacketIn)
         src := in.Packet.SrcMAC()
         dst := in.Packet.DstMAC()
-        src_ip := in.Packet.SrcIP()
-        dst_ip := in.Packet.DstIP()
+        src_ip := SrcIP(in.Packet)
+        dst_ip := DstIP(in.Packet)
         d := ctx.Dict(ip2port)
 
         if dst.IsLLDP() {
@@ -37,7 +37,7 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
         }
 
         // FIXME: Hardcoding the hardware address at the moment
-        srck := src_ip.Key()
+        srck := src_ip.String()
         _, src_err := d.Get(srck)
         if src_err != nil {
             fmt.Printf("Router: Error retrieving hosts %v\n", src_ip)
@@ -50,7 +50,7 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
         sn := in.Node
 
-        dstk := dst_ip.Key()
+        dstk := dst_ip.String()
         dst_port, dst_err := d.Get(dstk)
         if  dst_err != nil {
             fmt.Printf("Router: Cant find dest node %v\n", dstk)
