@@ -15,7 +15,7 @@ type RouterIP struct{
     discovery.GraphBuilderCentralized
 }
 
-func (r Router) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
+func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
     switch msg.Data().(type) {
     case setupIP:
@@ -145,7 +145,7 @@ func (r Router) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
 // Rcv maps Discovery based on its destination node and Advertisement messages
 // based on their source node.
-func (r Router) Map(msg bh.Msg, ctx bh.MapContext) bh.MappedCells {
+func (r RouterIP) Map(msg bh.Msg, ctx bh.MapContext) bh.MappedCells {
 
     return bh.MappedCells{{"__D__", "__0__"}}
 
