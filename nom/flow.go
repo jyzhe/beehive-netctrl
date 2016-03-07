@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	bh "github.com/kandoo/beehive"
-	"github.com/kandoo/beehive/strings"
+	bh "github.com/jyzhe/beehive"
+	"github.com/jyzhe/beehive/strings"
 )
 
 // InPort is the input port field.

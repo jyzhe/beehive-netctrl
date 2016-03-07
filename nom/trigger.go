@@ -4,7 +4,7 @@ import (
 	"encoding/gob"
 	"time"
 
-	bh "github.com/kandoo/beehive"
+	bh "github.com/jyzhe/beehive"
 )
 
 // AddTrigger is a message emitted to install a trigger.

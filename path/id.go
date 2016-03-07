@@ -1,7 +1,7 @@
 package path
 
 import (
-	bh "github.com/kandoo/beehive"
+	bh "github.com/jyzhe/beehive"
 )
 
 func reserveFlowID(ctx bh.RcvContext, cnt int) uint64 {

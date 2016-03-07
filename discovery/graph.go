@@ -5,9 +5,9 @@ import (
 	"encoding/gob"
 	"fmt"
 
-	bh "github.com/kandoo/beehive"
+	bh "github.com/jyzhe/beehive"
 	"github.com/jyzhe/beehive-netctrl/nom"
-	"github.com/kandoo/beehive/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/jyzhe/beehive/Godeps/_workspace/src/github.com/golang/glog"
 )
 
 const (

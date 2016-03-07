@@ -1,7 +1,7 @@
 package openflow
 
 import (
-	"github.com/kandoo/beehive/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/jyzhe/beehive/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/jyzhe/beehive-netctrl/openflow/of10"
 	"github.com/jyzhe/beehive-netctrl/openflow/of12"
 )

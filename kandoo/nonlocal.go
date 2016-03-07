@@ -1,7 +1,7 @@
 package kandoo
 
 import (
-	bh "github.com/kandoo/beehive"
+	bh "github.com/jyzhe/beehive"
 )
 
 // Implements the map function for nonLocal handlers.

@@ -3,7 +3,7 @@ package controller
 import (
 	"time"
 
-	bh "github.com/kandoo/beehive"
+	bh "github.com/jyzhe/beehive"
 	"github.com/jyzhe/beehive-netctrl/nom"
 )
 

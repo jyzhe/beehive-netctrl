@@ -3,9 +3,9 @@ package controller
 import (
 	"fmt"
 
-	"github.com/kandoo/beehive/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/jyzhe/beehive/Godeps/_workspace/src/github.com/golang/glog"
 
-	bh "github.com/kandoo/beehive"
+	bh "github.com/jyzhe/beehive"
 	"github.com/jyzhe/beehive-netctrl/nom"
 )
 

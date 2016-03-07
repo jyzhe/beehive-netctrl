@@ -3,10 +3,10 @@ package openflow
 import (
 	"io"
 
-	bh "github.com/kandoo/beehive"
+	bh "github.com/jyzhe/beehive"
 	"github.com/jyzhe/beehive-netctrl/nom"
 	"github.com/jyzhe/beehive-netctrl/openflow/of"
-	"github.com/kandoo/beehive/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/jyzhe/beehive/Godeps/_workspace/src/github.com/golang/glog"
 )
 
 type ofConnConfig struct {

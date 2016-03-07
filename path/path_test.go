@@ -3,7 +3,7 @@ package path
 import (
 	"testing"
 
-	bh "github.com/kandoo/beehive"
+	bh "github.com/jyzhe/beehive"
 	"github.com/jyzhe/beehive-netctrl/discovery"
 	"github.com/jyzhe/beehive-netctrl/nom"
 )

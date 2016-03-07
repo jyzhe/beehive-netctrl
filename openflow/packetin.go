@@ -6,7 +6,7 @@ import (
 	"github.com/jyzhe/beehive-netctrl/nom"
 	"github.com/jyzhe/beehive-netctrl/openflow/of10"
 	"github.com/jyzhe/beehive-netctrl/openflow/of12"
-	"github.com/kandoo/beehive/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/jyzhe/beehive/Godeps/_workspace/src/github.com/golang/glog"
 )
 
 func (of *of10Driver) handlePacketIn(in of10.PacketIn, c *ofConn) error {

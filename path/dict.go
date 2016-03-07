@@ -1,7 +1,7 @@
 package path
 
 import (
-	bh "github.com/kandoo/beehive"
+	bh "github.com/jyzhe/beehive"
 )
 
 const (
