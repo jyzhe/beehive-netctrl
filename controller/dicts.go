@@ -7,7 +7,7 @@ import (
 	"time"
 
 	bh "github.com/kandoo/beehive"
-	"github.com/kandoo/beehive-netctrl/nom"
+	"github.com/jyzhe/beehive-netctrl/nom"
 	"github.com/kandoo/beehive/state"
 )
 
