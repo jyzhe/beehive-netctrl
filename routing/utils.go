@@ -55,7 +55,7 @@ func InstallLoadBalancer(h bh.Hive, opts ...bh.AppOption) {
 func InstallRouterIP(h bh.Hive, opts ...bh.AppOption) {
 
     app := h.NewApp("RouterIp", opts...)
-    router := RouterIp{}
+    router := RouterIP{}
 
     // handle routing of packets
     app.Handle(nom.PacketIn{}, router)
@@ -141,13 +141,13 @@ func calculate_load(ctx bh.RcvContext, path []nom.Link) int {
 
 }
 
-func (p Packet) SrcIP() IPv4Addr{
+func (p nom.Packet) SrcIP() IPv4Addr{
     return IPv4Addr{p[26],p[27],p[28],p[29]}
 }
-func (p Packet) DstIP() IPv4Addr{
+func (p nom.Packet) DstIP() IPv4Addr{
     return IPv4Addr{p[30],p[31],p[32],p[33]}
 }
 
-func (ip IPv4Addr) Key() string{
+func (ip nom.IPv4Addr) Key() string{
     return string(ip[:])
 }
