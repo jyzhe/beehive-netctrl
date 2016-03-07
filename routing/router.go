@@ -28,6 +28,7 @@ func (r Router) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 		in := msg.Data().(nom.PacketIn)
 		src := in.Packet.SrcMAC()
 		dst := in.Packet.DstMAC()
+
 		d := ctx.Dict(mac2port)
 
 		if dst.IsLLDP() {

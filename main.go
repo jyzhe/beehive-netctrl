@@ -44,7 +44,6 @@ func main() {
 	// switching.RegisterHub(h, bh.NonTransactional())
 
 	// routing.InstallRouter(h, bh.Persistent(1))
-	// routing.InstallLoadBalancer(h, bh.Persistent(1))
-	routing.InstallRouterIP(h,bh.Persistent(1))
+	routing.InstallLoadBalancer(h, bh.Persistent(1))
 	h.Start()
 }
