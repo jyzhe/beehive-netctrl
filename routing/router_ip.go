@@ -33,10 +33,6 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
         fmt.Printf("src ip:%s, dst ip:%s\n",src_ip.String(),dst_ip.String())
 
         d := ctx.Dict(ip2port)
-        //For debugging
-        for key, value := range d {
-            fmt.Println("Key:", key, "Value:", value)
-        }
         if dst.IsLLDP() {
             return nil
         }
