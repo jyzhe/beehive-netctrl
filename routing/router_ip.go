@@ -30,6 +30,7 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
         dst := in.Packet.DstMAC()
         src_ip := SrcIP(in.Packet)
         dst_ip := DstIP(in.Packet)
+        fmt.Printf("src ip:%s, dst ip:%s",src_ip.String(),dst_ip.String())
         d := ctx.Dict(ip2port)
 
         if dst.IsLLDP() {

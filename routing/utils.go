@@ -66,7 +66,7 @@ func InstallRouterIP(h bh.Hive, opts ...bh.AppOption) {
     app.Handle(setup{}, router)
     h.Emit(setup{})
 
-    fmt.Println("Installing Router....")
+    fmt.Println("Installing RouterIP....")
 }
 
 func routing_setup(ctx bh.RcvContext) error {
