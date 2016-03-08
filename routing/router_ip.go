@@ -30,9 +30,13 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
         dst := in.Packet.DstMAC()
         src_ip := SrcIP(in.Packet)
         dst_ip := DstIP(in.Packet)
-        fmt.Printf("src ip:%s, dst ip:%s",src_ip.String(),dst_ip.String())
-        d := ctx.Dict(ip2port)
+        fmt.Printf("src ip:%s, dst ip:%s\n",src_ip.String(),dst_ip.String())
 
+        d := ctx.Dict(ip2port)
+        //For debugging
+        for key, value := range d {
+            fmt.Println("Key:", key, "Value:", value)
+        }
         if dst.IsLLDP() {
             return nil
         }
@@ -98,6 +102,7 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
                 },
             }
             ctx.Reply(msg, add_forward)
+            fmt.Println("Add Forward",add_forward);
 
         }
 
@@ -123,6 +128,7 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
                 },
             }
             ctx.Reply(msg, add_reverse)
+            fmt.Println("Add Reverse",add_reverse);
 
         }
 
