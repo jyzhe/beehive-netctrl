@@ -80,57 +80,57 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
             }
         }
 
-        if src_err == nil {
+        // if src_err == nil {
 
-            // Forward flow entry
-            add_forward := nom.AddFlowEntry{
-                Flow: nom.FlowEntry{
-                    Node: in.Node,
-                    Match: nom.Match{
-                        Fields: []nom.Field{
-                            nom.IPv4Dst{
-                                Addr: dst_ip,
-                                Mask: nom.MaskNoneIPV4,
-                            },
-                        },
-                    },
-                    Actions: []nom.Action{
-                        nom.ActionForward{
-                            Ports: []nom.UID{p},
-                        },
-                    },
-                },
-            }
-            ctx.Reply(msg, add_forward)
-            fmt.Println("Add Forward",add_forward);
+        //     // Forward flow entry
+        //     add_forward := nom.AddFlowEntry{
+        //         Flow: nom.FlowEntry{
+        //             Node: in.Node,
+        //             Match: nom.Match{
+        //                 Fields: []nom.Field{
+        //                     nom.IPv4Dst{
+        //                         Addr: dst_ip,
+        //                         Mask: nom.MaskNoneIPV4,
+        //                     },
+        //                 },
+        //             },
+        //             Actions: []nom.Action{
+        //                 nom.ActionForward{
+        //                     Ports: []nom.UID{p},
+        //                 },
+        //             },
+        //         },
+        //     }
+        //     ctx.Reply(msg, add_forward)
+        //     fmt.Println("Add Forward",add_forward);
 
-        }
+        // }
 
-        if dst_err == nil {
+        // if dst_err == nil {
 
-            // Reverse flow entry
-            add_reverse := nom.AddFlowEntry{
-                Flow: nom.FlowEntry{
-                    Node: in.Node,
-                    Match: nom.Match{
-                        Fields: []nom.Field{
-                            nom.IPv4Dst{
-                                Addr: src_ip,
-                                Mask: nom.MaskNoneIPV4,
-                            },
-                        },
-                    },
-                    Actions: []nom.Action{
-                        nom.ActionForward{
-                            Ports: []nom.UID{in.InPort},
-                        },
-                    },
-                },
-            }
-            ctx.Reply(msg, add_reverse)
-            fmt.Println("Add Reverse",add_reverse);
+        //     // Reverse flow entry
+        //     add_reverse := nom.AddFlowEntry{
+        //         Flow: nom.FlowEntry{
+        //             Node: in.Node,
+        //             Match: nom.Match{
+        //                 Fields: []nom.Field{
+        //                     nom.IPv4Dst{
+        //                         Addr: src_ip,
+        //                         Mask: nom.MaskNoneIPV4,
+        //                     },
+        //                 },
+        //             },
+        //             Actions: []nom.Action{
+        //                 nom.ActionForward{
+        //                     Ports: []nom.UID{in.InPort},
+        //                 },
+        //             },
+        //         },
+        //     }
+        //     ctx.Reply(msg, add_reverse)
+        //     fmt.Println("Add Reverse",add_reverse);
 
-        }
+        // }
 
         out := nom.PacketOut{
             Node:     in.Node,
