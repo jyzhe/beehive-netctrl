@@ -18,8 +18,11 @@ type Router struct{
 func (r Router) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
 	switch msg.Data().(type) {
+	case InterAreaQuery:
+		fmt.Println("HERE")
+		return nil
 	case setup:
-		return routing_setup(ctx)
+		return registerEndhosts(ctx)
 	case nom.LinkAdded:
 		return r.GraphBuilderCentralized.Rcv(msg, ctx)
 	case nom.LinkDeleted:
@@ -53,7 +56,9 @@ func (r Router) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 		dst_port, dst_err := d.Get(dstk)
 		if  dst_err != nil {
 			fmt.Printf("Router: Cant find dest node %v\n", dstk)
+			ctx.Emit(InterAreaQuery{})
 			return nil
+			dst_port, _ = d.Get("default")
 		}
 		dn,_ := nom.ParsePortUID(dst_port.(nom.UID))
 		p := dst_port.(nom.UID)

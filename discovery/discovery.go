@@ -184,8 +184,9 @@ func (h *pktInHandler) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
 	d := ctx.Dict(nodeDict)
 	k := string(pin.Node)
+
 	if _, err := d.Get(k); err != nil {
-		return fmt.Errorf("Node %v not found", pin.Node)
+		return fmt.Errorf("Node %v not found, %v", pin.Node, port.UID())
 	}
 
 	l := nom.Link{
@@ -215,6 +216,8 @@ func (h *pktInHandler) Map(msg bh.Msg, ctx bh.MapContext) bh.MappedCells {
 
 type NewLink nom.Link
 
+type RegisterBorderNode nom.Link
+
 type newLinkHandler struct{}
 
 func (h *newLinkHandler) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
@@ -224,7 +227,8 @@ func (h *newLinkHandler) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 	k := string(n)
 	v, err := d.Get(k)
 	if err != nil {
-		return err
+		// ctx.Emit(RegisterBorderNode(l))
+		return nil
 	}
 	np := v.(nodePortsAndLinks)
 
