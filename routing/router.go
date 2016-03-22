@@ -1,17 +1,16 @@
 package routing
 
 import (
-
 	"fmt"
 
+	"github.com/jyzhe/beehive-netctrl/discovery"
 	bh "github.com/kandoo/beehive"
-    "github.com/kandoo/beehive-netctrl/nom"
-    "github.com/jyzhe/beehive-netctrl/discovery"
+	"github.com/kandoo/beehive-netctrl/nom"
 	"github.com/kandoo/beehive/Godeps/_workspace/src/golang.org/x/net/context"
 )
 
 // Router is the main handler of the routing application.
-type Router struct{
+type Router struct {
 	// switching.Hub
 	discovery.GraphBuilderCentralized
 }
@@ -54,7 +53,7 @@ func (r Router) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
 		dstk := dst.Key()
 		dst_port, dst_err := d.Get(dstk)
-		if  dst_err != nil {
+		if dst_err != nil {
 			fmt.Printf("Router: Cant find dest node %v\n", dstk)
 			res, query_err := ctx.Sync(context.TODO(), InterAreaQuery{Src: srck, Dst: dstk})
 			if query_err != nil {
@@ -63,10 +62,10 @@ func (r Router) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 			fmt.Printf("Router: received response succesfully - %v\n", res)
 			dst_port = res.(nom.UID)
 		}
-		dn,_ := nom.ParsePortUID(dst_port.(nom.UID))
+		dn, _ := nom.ParsePortUID(dst_port.(nom.UID))
 		p := dst_port.(nom.UID)
 
-		if (sn != nom.UID(dn)){
+		if sn != nom.UID(dn) {
 
 			paths, shortest_len := discovery.ShortestPathCentralized(sn, nom.UID(dn), ctx)
 			fmt.Printf("Router: Path between %v and %v returns %v, %v\n", sn, nom.UID(dn), paths, shortest_len)
@@ -138,7 +137,7 @@ func (r Router) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 		ctx.Reply(msg, out)
 	}
 
-    return nil
+	return nil
 
 }
 

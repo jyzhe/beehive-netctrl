@@ -1,26 +1,24 @@
 package routing
 
 import (
-
 	"fmt"
 
+	"github.com/jyzhe/beehive-netctrl/discovery"
 	bh "github.com/kandoo/beehive"
-    "github.com/kandoo/beehive-netctrl/nom"
-    "github.com/jyzhe/beehive-netctrl/discovery"
+	"github.com/kandoo/beehive-netctrl/nom"
 	"github.com/kandoo/beehive/Godeps/_workspace/src/golang.org/x/net/context"
 )
 
 // Router is the main handler of the routing application.
-type LoadBalancer struct{
-
+type LoadBalancer struct {
 	discovery.GraphBuilderCentralized
 }
 
 func (r LoadBalancer) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
 	switch dm := msg.Data().(type) {
-    case setup:
-        return registerEndhosts2(ctx)
+	case setup:
+		return registerEndhosts2(ctx)
 	case nom.LinkAdded:
 		link := InterAreaLink(dm)
 		ctx.Emit(link)
@@ -33,7 +31,7 @@ func (r LoadBalancer) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 		dst := in.Packet.DstMAC()
 
 		d := ctx.Dict(mac2port)
-        load_dict := ctx.Dict(load_on_nodes)
+		load_dict := ctx.Dict(load_on_nodes)
 
 		if dst.IsLLDP() {
 			return nil
@@ -51,7 +49,7 @@ func (r LoadBalancer) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
 		dstk := dst.Key()
 		dst_port, dst_err := d.Get(dstk)
-		if  dst_err != nil {
+		if dst_err != nil {
 			fmt.Printf("Load Balancer: Cant find dest node %v\n", dstk)
 			res, query_err := ctx.Sync(context.TODO(), InterAreaQuery{Src: srck, Dst: dstk})
 			if query_err != nil {
@@ -60,77 +58,77 @@ func (r LoadBalancer) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 			fmt.Printf("Load Balancer: received response succesfully - %v\n", res)
 			dst_port = res.(nom.UID)
 		}
-		dn,_ := nom.ParsePortUID(dst_port.(nom.UID))
+		dn, _ := nom.ParsePortUID(dst_port.(nom.UID))
 		p := dst_port.(nom.UID)
 
-		if (sn != nom.UID(dn)){
+		if sn != nom.UID(dn) {
 
 			paths, _ := discovery.ShortestPathCentralized(sn, nom.UID(dn), ctx)
-            opt_path := paths[0]
-            min_load := calculate_load(ctx, paths[0])
+			opt_path := paths[0]
+			min_load := calculate_load(ctx, paths[0])
 			for _, path := range paths[1:] {
 
-                load := calculate_load(ctx, path)
-                if load < min_load{
-                    opt_path = path
-                    min_load = load
-                }
+				load := calculate_load(ctx, path)
+				if load < min_load {
+					opt_path = path
+					min_load = load
+				}
 			}
 
-            fmt.Printf("Load Balancer: Routing flow from %v to %v - %v, %v\n", sn, nom.UID(dn), opt_path, len(opt_path))
-            p = opt_path[0].From
+			fmt.Printf("Load Balancer: Routing flow from %v to %v - %v, %v\n", sn, nom.UID(dn), opt_path, len(opt_path))
+			p = opt_path[0].From
 		}
 
-        // Forward flow entry
-        add_forward := nom.AddFlowEntry{
-            Flow: nom.FlowEntry{
-                Node: in.Node,
-                Match: nom.Match{
-                    Fields: []nom.Field{
-                        nom.EthDst{
-                            Addr: dst,
-                            Mask: nom.MaskNoneMAC,
-                        },
-                    },
-                },
-                Actions: []nom.Action{
-                    nom.ActionForward{
-                        Ports: []nom.UID{p},
-                    },
-                },
-            },
-        }
-        ctx.Reply(msg, add_forward)
+		// Forward flow entry
+		add_forward := nom.AddFlowEntry{
+			Flow: nom.FlowEntry{
+				Node: in.Node,
+				Match: nom.Match{
+					Fields: []nom.Field{
+						nom.EthDst{
+							Addr: dst,
+							Mask: nom.MaskNoneMAC,
+						},
+					},
+				},
+				Actions: []nom.Action{
+					nom.ActionForward{
+						Ports: []nom.UID{p},
+					},
+				},
+			},
+		}
+		ctx.Reply(msg, add_forward)
 
-        // Reverse flow entry
-        add_reverse := nom.AddFlowEntry{
-            Flow: nom.FlowEntry{
-                Node: in.Node,
-                Match: nom.Match{
-                    Fields: []nom.Field{
-                        nom.EthDst{
-                            Addr: src,
-                            Mask: nom.MaskNoneMAC,
-                        },
-                    },
-                },
-                Actions: []nom.Action{
-                    nom.ActionForward{
-                        Ports: []nom.UID{in.InPort},
-                    },
-                },
-            },
-        }
-        ctx.Reply(msg, add_reverse)
+		// Reverse flow entry
+		add_reverse := nom.AddFlowEntry{
+			Flow: nom.FlowEntry{
+				Node: in.Node,
+				Match: nom.Match{
+					Fields: []nom.Field{
+						nom.EthDst{
+							Addr: src,
+							Mask: nom.MaskNoneMAC,
+						},
+					},
+				},
+				Actions: []nom.Action{
+					nom.ActionForward{
+						Ports: []nom.UID{in.InPort},
+					},
+				},
+			},
+		}
+		ctx.Reply(msg, add_reverse)
 
-        // Updating the load on this node
-        // FIXME: This is a naive approach, ideally should update when flowentry
-        // is added/removed, but flowentry deleted is not implemented yet
-        if load, err := load_dict.Get(string(in.Node)); err == nil {
-            load_dict.Put(string(in.Node), load.(int) + 1)
-        } else {
-            load_dict.Put(string(in.Node), 1)
-        }
+		// Updating the load on this node
+		// FIXME: This is a naive approach, ideally should update when flowentry
+		// is added/removed, but flowentry deleted is not implemented yet
+		if load, err := load_dict.Get(string(in.Node)); err == nil {
+			load_dict.Put(string(in.Node), load.(int)+1)
+		} else {
+			load_dict.Put(string(in.Node), 1)
+		}
 
 		out := nom.PacketOut{
 			Node:     in.Node,
@@ -146,7 +144,7 @@ func (r LoadBalancer) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 		ctx.Reply(msg, out)
 	}
 
-    return nil
+	return nil
 
 }
 
