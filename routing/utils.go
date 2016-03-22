@@ -3,6 +3,7 @@ package routing
 import (
 
     "fmt"
+	"strconv"
 
 	bh "github.com/kandoo/beehive"
     // "github.com/jyzhe/beehive-netctrl/discovery"
@@ -12,6 +13,7 @@ import (
 
 const (
 	mac2port = "mac2port"
+    mac2area = "mac2area"
     load_on_nodes = "loadonnodes"
     node2area = "node2area"
     ip2port = "ip2port"
@@ -20,43 +22,56 @@ const (
 type setup struct{}
 type area_setup struct{}
 
+type InterAreaQuery struct{
+    Src string
+    Dst string
+}
+
+type InterAreaQueryResponse struct {
+    Port string
+}
+
 type InterAreaLink nom.Link
-type InterAreaQuery struct{}
 
 // InstallRouting installs the routing application
 func InstallRouter(h bh.Hive, opts ...bh.AppOption) {
 
-    app := h.NewApp("Router", opts...)
+    app := h.NewApp("Controller", opts...)
 	router := Router{}
-
-    // handle routing of packets
-    app.Handle(nom.PacketIn{}, router)
-    // building centralized network topology
-	app.Handle(nom.LinkAdded{}, router)
-	app.Handle(nom.LinkDeleted{}, router)
     app.Handle(InterAreaQuery{}, router)
+    app.Handle(InterAreaLink{}, router)
 
-    app.Handle(setup{}, router)
-    h.Emit(setup{})
+    app2 := h.NewApp("Router", opts...)
+    // handle routing of packets
+    app2.Handle(nom.PacketIn{}, router)
+    // building centralized network topology
+	app2.Handle(nom.LinkAdded{}, router)
+	app2.Handle(nom.LinkDeleted{}, router)
 
-    // app.Handle(discovery.RegisterBorderNode{}, router)
+    app2.Handle(setup{}, router)
+    go h.Emit(setup{})
+    // go h.Emit(InterAreaLink{})
 
     fmt.Println("Installing Router....")
 }
 
 func InstallLoadBalancer(h bh.Hive, opts ...bh.AppOption) {
 
-    app := h.NewApp("LoadBalancer", opts...)
+    app := h.NewApp("Controller", opts...)
 	loadbalancer := LoadBalancer{}
+    app.Handle(InterAreaQuery{}, loadbalancer)
+    app.Handle(InterAreaLink{}, loadbalancer)
 
+    app2 := h.NewApp("LoadBalancer", opts...)
     // handle routing of packets
-    app.Handle(nom.PacketIn{}, loadbalancer)
+    app2.Handle(nom.PacketIn{}, loadbalancer)
     // building centralized network topology
-	app.Handle(nom.LinkAdded{}, loadbalancer)
-	app.Handle(nom.LinkDeleted{}, loadbalancer)
+	app2.Handle(nom.LinkAdded{}, loadbalancer)
+	app2.Handle(nom.LinkDeleted{}, loadbalancer)
+    app2.Handle(setup{}, loadbalancer)
 
-    app.Handle(setup{}, loadbalancer)
-    h.Emit(setup{})
+    go h.Emit(setup{})
+    // go h.Emit(InterAreaLink{})
 
     // app.Handle(discovery.RegisterBorderNode{}, loadbalancer)
 
@@ -65,12 +80,15 @@ func InstallLoadBalancer(h bh.Hive, opts ...bh.AppOption) {
 
 func InstallMaster(h bh.Hive, opts ...bh.AppOption){
 
-    app := h.NewApp("MasterController", opts...)
+    app := h.NewApp("Controller", opts...)
     mastercontroller := MasterController{}
 
-    app.Handle(InterAreaLink{}, mastercontroller)
     app.Handle(InterAreaQuery{}, mastercontroller)
+    app.Handle(InterAreaLink{}, mastercontroller)
     app.Handle(area_setup{}, mastercontroller)
+    app.Handle(nom.LinkAdded{}, mastercontroller)
+    app.Handle(nom.LinkDeleted{}, mastercontroller)
+
     h.Emit(area_setup{})
 
     fmt.Println("Installing Master Controller...")
@@ -139,13 +157,32 @@ func master_setup(ctx bh.RcvContext) error {
 
     d := ctx.Dict(node2area)
     for i := 1; i <= 5; i++ {
-        d.Put(string(i), string(1))
+        d.Put(strconv.Itoa(i), "1")
     }
 
     for i := 6; i <= 9; i++ {
-        d.Put(string(i), string(2))
+        d.Put(strconv.Itoa(i), "2")
     }
-    d.Put("a", string(2))
+    d.Put("a", "2")
+
+    d = ctx.Dict(mac2area)
+    a1 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x01}
+	d.Put(nom.MACAddr(a1).Key(), "1")
+	a2 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x02}
+	d.Put(nom.MACAddr(a2).Key(), "1")
+	a3 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x03}
+	d.Put(nom.MACAddr(a3).Key(), "1")
+	a4 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x04}
+	d.Put(nom.MACAddr(a4).Key(), "1")
+    a5 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x05}
+	d.Put(nom.MACAddr(a5).Key(), "2")
+	a6 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x06}
+	d.Put(nom.MACAddr(a6).Key(), "2")
+	a7 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x07}
+	d.Put(nom.MACAddr(a7).Key(), "2")
+	a8 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x08}
+	d.Put(nom.MACAddr(a8).Key(), "2")
+
     fmt.Printf("Adding node to area in master controller\n")
     return nil
 }

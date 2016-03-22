@@ -7,6 +7,7 @@ import (
 	bh "github.com/kandoo/beehive"
     "github.com/kandoo/beehive-netctrl/nom"
     "github.com/jyzhe/beehive-netctrl/discovery"
+	"github.com/kandoo/beehive/Godeps/_workspace/src/golang.org/x/net/context"
 )
 
 // Router is the main handler of the routing application.
@@ -17,13 +18,12 @@ type Router struct{
 
 func (r Router) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
-	switch msg.Data().(type) {
-	case InterAreaQuery:
-		fmt.Println("HERE")
-		return nil
+	switch dm := msg.Data().(type) {
 	case setup:
 		return registerEndhosts(ctx)
 	case nom.LinkAdded:
+		link := InterAreaLink(dm)
+		ctx.Emit(link)
 		return r.GraphBuilderCentralized.Rcv(msg, ctx)
 	case nom.LinkDeleted:
 		return r.GraphBuilderCentralized.Rcv(msg, ctx)
@@ -56,9 +56,12 @@ func (r Router) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 		dst_port, dst_err := d.Get(dstk)
 		if  dst_err != nil {
 			fmt.Printf("Router: Cant find dest node %v\n", dstk)
-			ctx.Emit(InterAreaQuery{})
-			return nil
-			dst_port, _ = d.Get("default")
+			res, query_err := ctx.Sync(context.TODO(), InterAreaQuery{Src: srck, Dst: dstk})
+			if query_err != nil {
+				fmt.Printf("Router: received error when querying! %v\n", query_err)
+			}
+			fmt.Printf("Router: received response succesfully - %v\n", res)
+			dst_port = res.(nom.UID)
 		}
 		dn,_ := nom.ParsePortUID(dst_port.(nom.UID))
 		p := dst_port.(nom.UID)
@@ -79,55 +82,47 @@ func (r Router) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 			}
 		}
 
-		if src_err == nil {
-
-			// Forward flow entry
-			add_forward := nom.AddFlowEntry{
-				Flow: nom.FlowEntry{
-					Node: in.Node,
-					Match: nom.Match{
-						Fields: []nom.Field{
-							nom.EthDst{
-								Addr: dst,
-								Mask: nom.MaskNoneMAC,
-							},
-						},
-					},
-					Actions: []nom.Action{
-						nom.ActionForward{
-							Ports: []nom.UID{p},
+		// Forward flow entry
+		add_forward := nom.AddFlowEntry{
+			Flow: nom.FlowEntry{
+				Node: in.Node,
+				Match: nom.Match{
+					Fields: []nom.Field{
+						nom.EthDst{
+							Addr: dst,
+							Mask: nom.MaskNoneMAC,
 						},
 					},
 				},
-			}
-			ctx.Reply(msg, add_forward)
-
-		}
-
-		if dst_err == nil {
-
-			// Reverse flow entry
-			add_reverse := nom.AddFlowEntry{
-				Flow: nom.FlowEntry{
-					Node: in.Node,
-					Match: nom.Match{
-						Fields: []nom.Field{
-							nom.EthDst{
-								Addr: src,
-								Mask: nom.MaskNoneMAC,
-							},
-						},
+				Actions: []nom.Action{
+					nom.ActionForward{
+						Ports: []nom.UID{p},
 					},
-					Actions: []nom.Action{
-						nom.ActionForward{
-							Ports: []nom.UID{in.InPort},
+				},
+			},
+		}
+		ctx.Reply(msg, add_forward)
+
+		// Reverse flow entry
+		add_reverse := nom.AddFlowEntry{
+			Flow: nom.FlowEntry{
+				Node: in.Node,
+				Match: nom.Match{
+					Fields: []nom.Field{
+						nom.EthDst{
+							Addr: src,
+							Mask: nom.MaskNoneMAC,
 						},
 					},
 				},
-			}
-			ctx.Reply(msg, add_reverse)
-
+				Actions: []nom.Action{
+					nom.ActionForward{
+						Ports: []nom.UID{in.InPort},
+					},
+				},
+			},
 		}
+		ctx.Reply(msg, add_reverse)
 
 		out := nom.PacketOut{
 			Node:     in.Node,

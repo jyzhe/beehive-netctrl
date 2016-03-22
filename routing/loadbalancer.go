@@ -7,6 +7,7 @@ import (
 	bh "github.com/kandoo/beehive"
     "github.com/kandoo/beehive-netctrl/nom"
     "github.com/jyzhe/beehive-netctrl/discovery"
+	"github.com/kandoo/beehive/Godeps/_workspace/src/golang.org/x/net/context"
 )
 
 // Router is the main handler of the routing application.
@@ -17,10 +18,12 @@ type LoadBalancer struct{
 
 func (r LoadBalancer) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
-	switch msg.Data().(type) {
+	switch dm := msg.Data().(type) {
     case setup:
         return registerEndhosts2(ctx)
 	case nom.LinkAdded:
+		link := InterAreaLink(dm)
+		ctx.Emit(link)
 		return r.GraphBuilderCentralized.Rcv(msg, ctx)
 	case nom.LinkDeleted:
 		return r.GraphBuilderCentralized.Rcv(msg, ctx)
@@ -38,10 +41,6 @@ func (r LoadBalancer) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
 		// FIXME: Hardcoding the hardware address at the moment
 		srck := src.Key()
-		_, src_err := d.Get(srck)
-		if src_err != nil {
-			fmt.Printf("Load Balancer: Error retrieving hosts %v\n", src)
-		}
 
 		if dst.IsBroadcast() || dst.IsMulticast() {
 			fmt.Printf("Load Balancer: Received Broadcast or Multicast from %v\n", src)
@@ -54,9 +53,12 @@ func (r LoadBalancer) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 		dst_port, dst_err := d.Get(dstk)
 		if  dst_err != nil {
 			fmt.Printf("Load Balancer: Cant find dest node %v\n", dstk)
-			ctx.Emit(InterAreaQuery{})
-			return nil
-			dst_port, _ = d.Get("default")
+			res, query_err := ctx.Sync(context.TODO(), InterAreaQuery{Src: srck, Dst: dstk})
+			if query_err != nil {
+				fmt.Printf("Load Balancer: received error when querying! %v\n", query_err)
+			}
+			fmt.Printf("Load Balancer: received response succesfully - %v\n", res)
+			dst_port = res.(nom.UID)
 		}
 		dn,_ := nom.ParsePortUID(dst_port.(nom.UID))
 		p := dst_port.(nom.UID)
@@ -79,55 +81,47 @@ func (r LoadBalancer) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
             p = opt_path[0].From
 		}
 
-        if src_err == nil {
-
-            // Forward flow entry
-            add_forward := nom.AddFlowEntry{
-                Flow: nom.FlowEntry{
-                    Node: in.Node,
-                    Match: nom.Match{
-                        Fields: []nom.Field{
-                            nom.EthDst{
-                                Addr: dst,
-                                Mask: nom.MaskNoneMAC,
-                            },
-                        },
-                    },
-                    Actions: []nom.Action{
-                        nom.ActionForward{
-                            Ports: []nom.UID{p},
+        // Forward flow entry
+        add_forward := nom.AddFlowEntry{
+            Flow: nom.FlowEntry{
+                Node: in.Node,
+                Match: nom.Match{
+                    Fields: []nom.Field{
+                        nom.EthDst{
+                            Addr: dst,
+                            Mask: nom.MaskNoneMAC,
                         },
                     },
                 },
-            }
-            ctx.Reply(msg, add_forward)
-
-        }
-
-        if dst_err == nil {
-
-            // Reverse flow entry
-            add_reverse := nom.AddFlowEntry{
-                Flow: nom.FlowEntry{
-                    Node: in.Node,
-                    Match: nom.Match{
-                        Fields: []nom.Field{
-                            nom.EthDst{
-                                Addr: src,
-                                Mask: nom.MaskNoneMAC,
-                            },
-                        },
+                Actions: []nom.Action{
+                    nom.ActionForward{
+                        Ports: []nom.UID{p},
                     },
-                    Actions: []nom.Action{
-                        nom.ActionForward{
-                            Ports: []nom.UID{in.InPort},
+                },
+            },
+        }
+        ctx.Reply(msg, add_forward)
+
+        // Reverse flow entry
+        add_reverse := nom.AddFlowEntry{
+            Flow: nom.FlowEntry{
+                Node: in.Node,
+                Match: nom.Match{
+                    Fields: []nom.Field{
+                        nom.EthDst{
+                            Addr: src,
+                            Mask: nom.MaskNoneMAC,
                         },
                     },
                 },
-            }
-            ctx.Reply(msg, add_reverse)
-
+                Actions: []nom.Action{
+                    nom.ActionForward{
+                        Ports: []nom.UID{in.InPort},
+                    },
+                },
+            },
         }
+        ctx.Reply(msg, add_reverse)
 
         // Updating the load on this node
         // FIXME: This is a naive approach, ideally should update when flowentry
