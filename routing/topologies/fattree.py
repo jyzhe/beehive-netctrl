@@ -15,7 +15,7 @@ from time import sleep, time
 from mininet.net import Mininet
 from mininet.topo import Topo
 from mininet.log import setLogLevel
-from mininet.node import RemoteController
+from mininet.node import OVSSwitch, Controller, RemoteController
 from mininet.cli import CLI
 from mininet.util import pmonitor
 from signal import SIGINT
@@ -33,13 +33,11 @@ class ThreeLayerTopo(Topo):
         aggr    = []
         tor     = []
         core    = []
-
-        for i in range(k):
-            core.append(self.addSwitch('s%s' % switchCount))
-            switchCount += 1
-
         # Create the pods
         for i in range(k):
+
+            core.append(self.addSwitch('s%s' % switchCount))
+            switchCount += 1
 
             # Adding aggregation switches
             for j in range(2):
@@ -54,6 +52,9 @@ class ThreeLayerTopo(Topo):
             # Adding hosts
             for j in range(4):
                 hosts.append(self.addHost('h%d'%(i * 4 + j)))
+
+        # Adding the links
+        for i in range(k):
 
             # Connect hosts to tor
             for j in range(4):
@@ -74,16 +75,42 @@ class ThreeLayerTopo(Topo):
 
 topos = { 'mytopo': ( lambda: ThreeLayerTopo() ) }
 
+class MultiSwitch(OVSSwitch):
+
+    map = {}
+
+    def init_map(self, controllers):
+        for i in range(2):
+            for j in range(1, 6):
+                self.map["s%d"%(i * 5 + j)] = controllers[i]
+
+
+    def start(self, controllers):
+        self.init_map(controllers)
+        return OVSSwitch.start(self, [self.map[self.name]])
+
 def start_mininet():
 
     fattree = ThreeLayerTopo()
-    controller = RemoteController(name="beehive-netctrl", ip="127.0.0.1", port=6633)
-    net = Mininet(topo=fattree, controller=controller,
+
+    c0 = RemoteController(name="beehive-netctrl", ip="127.0.0.1", port=6633)
+    c1 = RemoteController(name="beehive-netctrl2", ip="127.0.0.1", port=6634)
+    c2 = RemoteController(name="beehive-master", ip="127.0.0.1", port=9080)
+
+    net = Mininet(topo=fattree, switch=MultiSwitch, build=False,
                   autoSetMacs=True, autoStaticArp=True)
+
+
+    for c in [c0, c1]:
+        net.addController(c)
+
+    net.addController(c2)
+
+    net.build()
     net.start()
 
-    print "Performing prelimilary testing...."
-    pre_test(net)
+    # print "Performing prelimilary testing...."
+    # pre_test(net)
 
     CLI(net)
     net.stop()

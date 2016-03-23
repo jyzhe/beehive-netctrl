@@ -19,7 +19,7 @@ func (r LoadBalancer) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
 	switch msg.Data().(type) {
     case setup:
-        return routing_setup(ctx)
+        return registerEndhosts2(ctx)
 	case nom.LinkAdded:
 		return r.GraphBuilderCentralized.Rcv(msg, ctx)
 	case nom.LinkDeleted:
@@ -40,7 +40,7 @@ func (r LoadBalancer) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 		srck := src.Key()
 		_, src_err := d.Get(srck)
 		if src_err != nil {
-			registerEndhosts(ctx)
+			fmt.Printf("Load Balancer: Error retrieving hosts %v\n", src)
 		}
 
 		if dst.IsBroadcast() || dst.IsMulticast() {
@@ -54,7 +54,9 @@ func (r LoadBalancer) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 		dst_port, dst_err := d.Get(dstk)
 		if  dst_err != nil {
 			fmt.Printf("Load Balancer: Cant find dest node %v\n", dstk)
+			ctx.Emit(InterAreaQuery{})
 			return nil
+			dst_port, _ = d.Get("default")
 		}
 		dn,_ := nom.ParsePortUID(dst_port.(nom.UID))
 		p := dst_port.(nom.UID)
@@ -62,7 +64,6 @@ func (r LoadBalancer) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 		if (sn != nom.UID(dn)){
 
 			paths, _ := discovery.ShortestPathCentralized(sn, nom.UID(dn), ctx)
-
             opt_path := paths[0]
             min_load := calculate_load(ctx, paths[0])
 			for _, path := range paths[1:] {
