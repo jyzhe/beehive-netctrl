@@ -34,8 +34,8 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
     case nom.LinkDeleted:
         return r.GraphBuilderCentralized.Rcv(msg, ctx)
     case areaQuery:
-        dst_area_id = FindAreaId(areaQuery.dst_ip)
-        src_area_id = FindAreaId(areaQuery.src_ip)
+        dst_area_id := FindAreaId(areaQuery(msg).dst_ip)
+        src_area_id := FindAreaId(areaQuery(msg).src_ip)
         ctx.Printf("area %s to area %s",src_area_id,dst_area_id)
         //TO DO THIS IS FINDING THE SHORTEST PATH IN SHORTEST GRAPH
         // dst_border_nodes = ctx.Dict(border_dict).get(dst_area_id)
@@ -55,7 +55,7 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
         // }
         // ctx.ReplyTo(msg, shortest_p)
 
-    default:
+    case nom.PacketIn:
         in := msg.Data().(nom.PacketIn)
         // src := in.Packet.SrcMAC()
         dst := in.Packet.DstMAC()
@@ -63,7 +63,7 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
         dst_ip := DstIP(in.Packet)
         fmt.Printf("src ip:%s, dst ip:%s\n",src_ip.String(),dst_ip.String())
 
-        d := ctx.Dict(ip2port).get(FindAreaId(src_ip))
+        d := ctx.Dict(ip2port).Get(FindAreaId(src_ip))
         if dst.IsLLDP() {
             return nil
         }
@@ -86,8 +86,8 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
         dst_port, dst_err := d.Get(dstk)
         if  dst_err != nil {
             fmt.Printf("Router: Cant find dest node %v\n", dstk)
-            res, error = bh.Sync(ctx, AreaQuery{dst_ip, src_ip})
-            if error!= nil{
+            res, reply_err := bh.Sync(ctx, AreaQuery{dst_ip, src_ip})
+            if reply_err!= nil{
                 fmt.Printf("No return messge for the query\n")
                 return nil
             }
