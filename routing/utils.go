@@ -13,6 +13,7 @@ const (
 	mac2port = "mac2port"
     load_on_nodes = "loadonnodes"
     ip2port = "ip2port"
+    border_dict = "border_dict"
 )
 
 type setup struct{}

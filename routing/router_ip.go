@@ -15,6 +15,15 @@ type RouterIP struct{
     discovery.GraphBuilderCentralized
 }
 
+type areaQuery struct{
+    dst_ip nom.IPv4Addr
+    src_ip nom.IPv4Addr
+}
+
+func FindAreaId(dst_ip nom.IPv4Addr) string{
+    return string(dst_ip[0])
+}
+
 func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
     switch msg.Data().(type) {
@@ -24,6 +33,27 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
         return r.GraphBuilderCentralized.Rcv(msg, ctx)
     case nom.LinkDeleted:
         return r.GraphBuilderCentralized.Rcv(msg, ctx)
+    case areaQuery:
+        dst_area_id = FindAreaId(areaQuery.dst_ip)
+        src_area_id = FindAreaId(areaQuery.src_ip)
+        //TO DO THIS IS FINDING THE SHORTEST PATH IN SHORTEST GRAPH
+        dst_border_nodes = ctx.Dict(border_dict).get(dst_area_id)
+        src_border_nodes = ctx.Dict(border_dict).get(src_area_id)
+        for _, dst_node := range dst_border_nodes{
+            for _, src_node := range src_border_nodes{
+                paths, shortest_len := discovery.ShortestPathCentralized(src_node, dst_node, ctx)
+            }
+        }
+        for _, path := range paths {
+            if len(path) >= shortest_len {
+                continue
+            } 
+            else {
+                shortest_p = path[0].From
+            }
+        }
+        ctx.ReplyTo(msg, shortest_p)
+
     default:
         in := msg.Data().(nom.PacketIn)
         // src := in.Packet.SrcMAC()
@@ -32,7 +62,7 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
         dst_ip := DstIP(in.Packet)
         fmt.Printf("src ip:%s, dst ip:%s\n",src_ip.String(),dst_ip.String())
 
-        d := ctx.Dict(ip2port)
+        d := ctx.Dict(ip2port).get(FindAreaId(src_ip))
         if dst.IsLLDP() {
             return nil
         }
@@ -55,6 +85,13 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
         dst_port, dst_err := d.Get(dstk)
         if  dst_err != nil {
             fmt.Printf("Router: Cant find dest node %v\n", dstk)
+            res, error = bh.Sync(ctx, AreaQuery{dst_ip, src_ip})
+            if error!= nil{
+                fmt.Printf("No return messge for the query\n")
+                return nil
+            }
+
+
             return nil
         }
         dn,_ := nom.ParsePortUID(dst_port.(nom.UID))
@@ -75,7 +112,7 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
                 }
             }
         }
-
+        //FLOW entry comment:
         // if src_err == nil {
 
         //     // Forward flow entry
@@ -149,8 +186,20 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 // Rcv maps Discovery based on its destination node and Advertisement messages
 // based on their source node.
 func (r RouterIP) Map(msg bh.Msg, ctx bh.MapContext) bh.MappedCells {
-
-    return bh.MappedCells{{"__D__", "__0__"}}
+    switch msg.Data().(type){
+    case areaQuery:
+        return bh.MappedCells{{"__D__", "__0__"}}
+    case nom.PacketIn:
+        in := msg.Data().(nom.PacketIn)
+        src_ip := SrcIP(in.Packet)
+        return bh.MappedCells{{ip2port, FindAreaId(src_ip)}}
+    case nom.LinkAdded:
+        
+    case nom.LinkDeleted:
+        
+    default:
+        return bh.MappedCells{{"__D__", "__0__"}}
+    }
 
     // switch dm := msg.Data().(type) {
     // case nom.LinkAdded:
