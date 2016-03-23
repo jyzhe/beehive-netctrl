@@ -251,7 +251,6 @@ func InstallRouterMAC(h bh.Hive, opts ...bh.AppOption) {
     app.Handle(areaQuery{}, router)
 
     app.Handle(setupArea{}, router)
-    h.Emit(setupArea{'1'})
     // h.Emit(setupArea{'2'})
     // app.Handle(discovery.RegisterBorderNode{}, router)
 
