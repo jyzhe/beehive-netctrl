@@ -34,8 +34,8 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
     case nom.LinkDeleted:
         return r.GraphBuilderCentralized.Rcv(msg, ctx)
     case areaQuery:
-        dst_area_id := FindAreaId((msg.Data().(areaQuery).dst_ip)
-        src_area_id := FindAreaId((msg.Data().(areaQuery).src_ip)
+        dst_area_id := FindAreaId((msg.Data().(areaQuery).dst_ip))
+        src_area_id := FindAreaId((msg.Data().(areaQuery).src_ip))
         ctx.Printf("area %s to area %s",src_area_id,dst_area_id)
         //TO DO THIS IS FINDING THE SHORTEST PATH IN SHORTEST GRAPH
         // dst_border_nodes = ctx.Dict(border_dict).get(dst_area_id)
