@@ -67,14 +67,14 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
         ip2portdict := ctx.Dict(ip2port)
         areaId:=FindAreaId(src_ip)
         d,_ := ip2portdict.Get(areaId)
-        d = d.(map[string]nom.UID)
+        mymap := d.(map[string]nom.UID)
         if dst.IsLLDP() {
             return nil
         }
 
         // FIXME: Hardcoding the hardware address at the moment
         srck := src_ip.String()
-        _, ok := d[srck]
+        _, ok := mymap[srck]
         if ok != true {
             fmt.Printf("Router: Error retrieving hosts %v\n", src_ip)
         }
@@ -87,7 +87,7 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
         sn := in.Node
 
         dstk := dst_ip.String()
-        dst_port, dst_err := d[dstk]
+        dst_port, dst_err := mymap[dstk]
         if  dst_err != true {
             fmt.Printf("Router: Cant find dest node %v\n", dstk)
             res, reply_err := bh.Sync(context.TODO(), areaQuery{dst_ip, src_ip})
