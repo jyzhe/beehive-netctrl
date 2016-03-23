@@ -88,8 +88,8 @@ def start_mininet():
     change_ip(net.hosts)
     net.start()
 
-    # print "Performing prelimilary testing...."
-    # pre_test(net)
+    print "Performing prelimilary testing...."
+    pre_test(net)
 
     CLI(net)
     net.stop()

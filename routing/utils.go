@@ -7,7 +7,6 @@ import (
 	bh "github.com/kandoo/beehive"
     // "github.com/jyzhe/beehive-netctrl/discovery"
     "github.com/kandoo/beehive-netctrl/nom"
-    "encoding/gob"
 
 )
 
@@ -86,8 +85,6 @@ func InstallRouterIP(h bh.Hive, opts ...bh.AppOption) {
     // handle routing of packets
     app.Handle(nom.PacketIn{}, router)
     // building centralized network topology
-    app.Handle(nom.NodeJoined{}, router)
-    app.Handle(areaQuery{},router)
     app.Handle(nom.LinkAdded{}, router)
     app.Handle(nom.LinkDeleted{}, router)
 
@@ -157,7 +154,6 @@ func master_setup(ctx bh.RcvContext) error {
 
 func registerEndhostsIP(ctx bh.RcvContext) error {
 
-    gob.Register(map[string]nom.UID{})
     d := ctx.Dict(ip2port)
     m := make(map[string]nom.UID)
     a1 := [4]byte{0x0a, 0x00, 0x00, 0x01}
@@ -176,7 +172,6 @@ func registerEndhostsIP(ctx bh.RcvContext) error {
     m[nom.IPv4Addr(a7).String()] = nom.UID("a$$1")
     a8 := [4]byte{0x0a, 0x00, 0x00, 0x08}
     m[nom.IPv4Addr(a8).String()] = nom.UID("a$$2")
-    d.Put(string(1),m)
     return nil
 
 }
