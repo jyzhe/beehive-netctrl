@@ -64,7 +64,8 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
         fmt.Printf("src ip:%s, dst ip:%s\n",src_ip.String(),dst_ip.String())
 
         ip2portdict := ctx.Dict(ip2port)
-        d := ip2portdict.Get(FindAreaId(src_ip))
+        areaId:=FindAreaId(src_ip)
+        d := ip2portdict.Get(areaId)
         if dst.IsLLDP() {
             return nil
         }
