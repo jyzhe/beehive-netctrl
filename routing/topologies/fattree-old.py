@@ -74,7 +74,7 @@ class ThreeLayerTopo(Topo):
 topos = { 'mytopo': ( lambda: ThreeLayerTopo() ) }
 
 def change_ip(hosts):
-    for i in range(k):
+    for i in range(2):
         for j in range(4):
             hosts[i*4 + j].setIP(str(i+1)+'.0.0.'+str(j+1)+'/24')
 
