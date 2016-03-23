@@ -7,6 +7,7 @@ import (
 	bh "github.com/kandoo/beehive"
     // "github.com/jyzhe/beehive-netctrl/discovery"
     "github.com/kandoo/beehive-netctrl/nom"
+    "encoding/gob"
 
 )
 
@@ -85,6 +86,8 @@ func InstallRouterIP(h bh.Hive, opts ...bh.AppOption) {
     // handle routing of packets
     app.Handle(nom.PacketIn{}, router)
     // building centralized network topology
+    app.Handle(nom.NodeJoined{}, router)
+    app.Handle(areaQuery{},router)
     app.Handle(nom.LinkAdded{}, router)
     app.Handle(nom.LinkDeleted{}, router)
 
@@ -154,23 +157,26 @@ func master_setup(ctx bh.RcvContext) error {
 
 func registerEndhostsIP(ctx bh.RcvContext) error {
 
+    gob.Register(map[string]nom.UID{})
     d := ctx.Dict(ip2port)
+    m := make(map[string]nom.UID)
     a1 := [4]byte{0x0a, 0x00, 0x00, 0x01}
-    d.Put(nom.IPv4Addr(a1).String(), nom.UID("5$$1"))
+    m[nom.IPv4Addr(a1).String()] = nom.UID("5$$1")
     a2 := [4]byte{0x0a, 0x00, 0x00, 0x02}
-    d.Put(nom.IPv4Addr(a2).String(), nom.UID("5$$2"))
+    m[nom.IPv4Addr(a2).String()] = nom.UID("5$$2")
     a3 := [4]byte{0x0a, 0x00, 0x00, 0x03}
-    d.Put(nom.IPv4Addr(a3).String(), nom.UID("6$$1"))
+    m[nom.IPv4Addr(a3).String()] = nom.UID("6$$1")
     a4 := [4]byte{0x0a, 0x00, 0x00, 0x04}
-    d.Put(nom.IPv4Addr(a4).String(), nom.UID("6$$2"))
+    m[nom.IPv4Addr(a4).String()] = nom.UID("6$$2")
     a5 := [4]byte{0x0a, 0x00, 0x00, 0x05}
-    d.Put(nom.IPv4Addr(a5).String(), nom.UID("9$$1"))
+    m[nom.IPv4Addr(a5).String()] = nom.UID("9$$1")
     a6 := [4]byte{0x0a, 0x00, 0x00, 0x06}
-    d.Put(nom.IPv4Addr(a6).String(), nom.UID("9$$2"))
+    m[nom.IPv4Addr(a6).String()] = nom.UID("9$$2")
     a7 := [4]byte{0x0a, 0x00, 0x00, 0x07}
-    d.Put(nom.IPv4Addr(a7).String(), nom.UID("a$$1"))
+    m[nom.IPv4Addr(a7).String()] = nom.UID("a$$1")
     a8 := [4]byte{0x0a, 0x00, 0x00, 0x08}
-    d.Put(nom.IPv4Addr(a8).String(), nom.UID("a$$2"))
+    m[nom.IPv4Addr(a8).String()] = nom.UID("a$$2")
+    d.Put(string(1),m)
     return nil
 
 }

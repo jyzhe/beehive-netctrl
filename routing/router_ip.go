@@ -7,6 +7,7 @@ import (
     bh "github.com/kandoo/beehive"
     "github.com/kandoo/beehive-netctrl/nom"
     "github.com/jyzhe/beehive-netctrl/discovery"
+    "github.com/kandoo/beehive/Godeps/_workspace/src/golang.org/x/net/context"
 )
 
 // Router is the main handler of the routing application.
@@ -27,6 +28,8 @@ func FindAreaId(dst_ip nom.IPv4Addr) string{
 func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
     switch msg.Data().(type) {
+    case nom.NodeJoined:
+        ctx.Printf("node joined\n")
     case setup:
         return routing_setupIP(ctx)
     case nom.LinkAdded:
@@ -34,8 +37,8 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
     case nom.LinkDeleted:
         return r.GraphBuilderCentralized.Rcv(msg, ctx)
     case areaQuery:
-        dst_area_id = FindAreaId(areaQuery.dst_ip)
-        src_area_id = FindAreaId(areaQuery.src_ip)
+        dst_area_id := FindAreaId((msg.Data().(areaQuery).dst_ip))
+        src_area_id := FindAreaId((msg.Data().(areaQuery).src_ip))
         ctx.Printf("area %s to area %s",src_area_id,dst_area_id)
         //TO DO THIS IS FINDING THE SHORTEST PATH IN SHORTEST GRAPH
         // dst_border_nodes = ctx.Dict(border_dict).get(dst_area_id)
@@ -55,7 +58,7 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
         // }
         // ctx.ReplyTo(msg, shortest_p)
 
-    default:
+    case nom.PacketIn:
         in := msg.Data().(nom.PacketIn)
         // src := in.Packet.SrcMAC()
         dst := in.Packet.DstMAC()
@@ -63,15 +66,21 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
         dst_ip := DstIP(in.Packet)
         fmt.Printf("src ip:%s, dst ip:%s\n",src_ip.String(),dst_ip.String())
 
-        d := ctx.Dict(ip2port).get(FindAreaId(src_ip))
+        ip2portdict := ctx.Dict(ip2port)
+        areaId:=FindAreaId(src_ip)
+        ctx.Printf("%s\n",areaId)
+        d,_ := ip2portdict.Get(areaId)
+        if d == nil{
+            fmt.Printf("Dictionary not existed\n")
+        }
         if dst.IsLLDP() {
             return nil
         }
 
         // FIXME: Hardcoding the hardware address at the moment
         srck := src_ip.String()
-        _, src_err := d.Get(srck)
-        if src_err != nil {
+        _, ok := d.(map[string]nom.UID)[srck]
+        if ok != true {
             fmt.Printf("Router: Error retrieving hosts %v\n", src_ip)
         }
 
@@ -83,11 +92,11 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
         sn := in.Node
 
         dstk := dst_ip.String()
-        dst_port, dst_err := d.Get(dstk)
-        if  dst_err != nil {
+        dst_port, dst_err := d.(map[string]nom.UID)[dstk]
+        if  dst_err != true {
             fmt.Printf("Router: Cant find dest node %v\n", dstk)
-            res, error = bh.Sync(ctx, AreaQuery{dst_ip, src_ip})
-            if error!= nil{
+            _, reply_err := bh.Sync(context.TODO(), areaQuery{dst_ip, src_ip})
+            if reply_err!= nil{
                 fmt.Printf("No return messge for the query\n")
                 return nil
             }
@@ -95,8 +104,8 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
             return nil
         }
-        dn,_ := nom.ParsePortUID(dst_port.(nom.UID))
-        p := dst_port.(nom.UID)
+        dn,_ := nom.ParsePortUID(dst_port)
+        p := dst_port
 
         if (sn != nom.UID(dn)){
 
@@ -195,9 +204,9 @@ func (r RouterIP) Map(msg bh.Msg, ctx bh.MapContext) bh.MappedCells {
         src_ip := SrcIP(in.Packet)
         return bh.MappedCells{{ip2port, FindAreaId(src_ip)}}
     case nom.LinkAdded:
-        return bh,MappedCells{{}}
+        return bh.MappedCells{{}}
     case nom.LinkDeleted:
-        return bh,MappedCells{{}}
+        return bh.MappedCells{{}}
     default:
         return bh.MappedCells{{}}
     }
