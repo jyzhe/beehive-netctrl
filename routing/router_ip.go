@@ -28,6 +28,8 @@ func FindAreaId(dst_ip nom.IPv4Addr) string{
 func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
     switch msg.Data().(type) {
+    case nom.NodeJoined:
+        ctx.Printf("node joined\n")
     case setup:
         return routing_setupIP(ctx)
     case nom.LinkAdded:
@@ -66,15 +68,18 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
         ip2portdict := ctx.Dict(ip2port)
         areaId:=FindAreaId(src_ip)
+        ctx.Printf("%s\n",areaId)
         d,_ := ip2portdict.Get(areaId)
-        mymap := d.(map[string]nom.UID)
+        if d == nil{
+            fmt.Printf("Dictionary not existed\n")
+        }
         if dst.IsLLDP() {
             return nil
         }
 
         // FIXME: Hardcoding the hardware address at the moment
         srck := src_ip.String()
-        _, ok := mymap[srck]
+        _, ok := d.(map[string]nom.UID)[srck]
         if ok != true {
             fmt.Printf("Router: Error retrieving hosts %v\n", src_ip)
         }
@@ -87,10 +92,10 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
         sn := in.Node
 
         dstk := dst_ip.String()
-        dst_port, dst_err := mymap[dstk]
+        dst_port, dst_err := d.(map[string]nom.UID)[dstk]
         if  dst_err != true {
             fmt.Printf("Router: Cant find dest node %v\n", dstk)
-            res, reply_err := bh.Sync(context.TODO(), areaQuery{dst_ip, src_ip})
+            _, reply_err := bh.Sync(context.TODO(), areaQuery{dst_ip, src_ip})
             if reply_err!= nil{
                 fmt.Printf("No return messge for the query\n")
                 return nil
@@ -99,8 +104,8 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
             return nil
         }
-        dn,_ := nom.ParsePortUID(dst_port.(nom.UID))
-        p := dst_port.(nom.UID)
+        dn,_ := nom.ParsePortUID(dst_port)
+        p := dst_port
 
         if (sn != nom.UID(dn)){
 
