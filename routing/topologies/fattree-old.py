@@ -53,9 +53,7 @@ class ThreeLayerTopo(Topo):
 
             # Adding hosts
             for j in range(4):
-                new_host = self.addHost('h%d'%(i * 4 + j))
-                new_host.setIP(str(i+1)+'.0.0.'+str(j+1)+'/24')
-                hosts.append(new_host)
+                hosts.append(self.addHost('h%d'%(i * 4 + j)))
             # Connect hosts to tor
             for j in range(4):
                 self.addLink(hosts[i * 4 + j], tor[i * 2 + j // 2])
@@ -75,12 +73,19 @@ class ThreeLayerTopo(Topo):
 
 topos = { 'mytopo': ( lambda: ThreeLayerTopo() ) }
 
+def change_ip(hosts):
+    for i in range(k):
+        for j in range(4):
+            hosts[i*4 + j].setIP(str(i+1)+'.0.0.'+str(j+1)+'/24')
+
+
 def start_mininet():
 
     fattree = ThreeLayerTopo()
     controller = RemoteController(name="beehive-netctrl", ip="127.0.0.1", port=6633)
     net = Mininet(topo=fattree, controller=controller,
                   autoSetMacs=True, autoStaticArp=True)
+    change_ip(net.hosts)
     net.start()
 
     print "Performing prelimilary testing...."
@@ -116,3 +121,5 @@ if __name__ == "__main__":
     setLogLevel('info')
 
     start_mininet()
+
+
