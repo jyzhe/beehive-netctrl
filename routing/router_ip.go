@@ -36,23 +36,24 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
     case areaQuery:
         dst_area_id = FindAreaId(areaQuery.dst_ip)
         src_area_id = FindAreaId(areaQuery.src_ip)
+        ctx.Printf("area %s to area %s",src_area_id,dst_area_id)
         //TO DO THIS IS FINDING THE SHORTEST PATH IN SHORTEST GRAPH
-        dst_border_nodes = ctx.Dict(border_dict).get(dst_area_id)
-        src_border_nodes = ctx.Dict(border_dict).get(src_area_id)
-        for _, dst_node := range dst_border_nodes{
-            for _, src_node := range src_border_nodes{
-                paths, shortest_len := discovery.ShortestPathCentralized(src_node, dst_node, ctx)
-            }
-        }
-        for _, path := range paths {
-            if len(path) >= shortest_len {
-                continue
-            } 
-            else {
-                shortest_p = path[0].From
-            }
-        }
-        ctx.ReplyTo(msg, shortest_p)
+        // dst_border_nodes = ctx.Dict(border_dict).get(dst_area_id)
+        // src_border_nodes = ctx.Dict(border_dict).get(src_area_id)
+        // for _, dst_node := range dst_border_nodes{
+        //     for _, src_node := range src_border_nodes{
+        //         paths, shortest_len := discovery.ShortestPathCentralized(src_node, dst_node, ctx)
+        //     }
+        // }
+        // for _, path := range paths {
+        //     if len(path) >= shortest_len {
+        //         continue
+        //     } 
+        //     else {
+        //         shortest_p = path[0].From
+        //     }
+        // }
+        // ctx.ReplyTo(msg, shortest_p)
 
     default:
         in := msg.Data().(nom.PacketIn)
@@ -194,11 +195,11 @@ func (r RouterIP) Map(msg bh.Msg, ctx bh.MapContext) bh.MappedCells {
         src_ip := SrcIP(in.Packet)
         return bh.MappedCells{{ip2port, FindAreaId(src_ip)}}
     case nom.LinkAdded:
-        
+        return bh,MappedCells{{}}
     case nom.LinkDeleted:
-        
+        return bh,MappedCells{{}}
     default:
-        return bh.MappedCells{{"__D__", "__0__"}}
+        return bh.MappedCells{{}}
     }
 
     // switch dm := msg.Data().(type) {
