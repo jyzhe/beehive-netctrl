@@ -34,8 +34,8 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
     case nom.LinkDeleted:
         return r.GraphBuilderCentralized.Rcv(msg, ctx)
     case areaQuery:
-        dst_area_id := FindAreaId(areaQuery(msg).dst_ip)
-        src_area_id := FindAreaId(areaQuery(msg).src_ip)
+        dst_area_id := FindAreaId((msg.Data().(areaQuery).dst_ip)
+        src_area_id := FindAreaId((msg.Data().(areaQuery).src_ip)
         ctx.Printf("area %s to area %s",src_area_id,dst_area_id)
         //TO DO THIS IS FINDING THE SHORTEST PATH IN SHORTEST GRAPH
         // dst_border_nodes = ctx.Dict(border_dict).get(dst_area_id)
@@ -86,7 +86,7 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
         dst_port, dst_err := d.Get(dstk)
         if  dst_err != nil {
             fmt.Printf("Router: Cant find dest node %v\n", dstk)
-            res, reply_err := bh.Sync(ctx, AreaQuery{dst_ip, src_ip})
+            res, reply_err := bh.Sync(context.TODO(), areaQuery{dst_ip, src_ip})
             if reply_err!= nil{
                 fmt.Printf("No return messge for the query\n")
                 return nil
@@ -195,9 +195,9 @@ func (r RouterIP) Map(msg bh.Msg, ctx bh.MapContext) bh.MappedCells {
         src_ip := SrcIP(in.Packet)
         return bh.MappedCells{{ip2port, FindAreaId(src_ip)}}
     case nom.LinkAdded:
-        return bh,MappedCells{{}}
+        return bh.MappedCells{{}}
     case nom.LinkDeleted:
-        return bh,MappedCells{{}}
+        return bh.MappedCells{{}}
     default:
         return bh.MappedCells{{}}
     }
