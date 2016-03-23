@@ -7,6 +7,7 @@ import (
     bh "github.com/kandoo/beehive"
     "github.com/kandoo/beehive-netctrl/nom"
     "github.com/jyzhe/beehive-netctrl/discovery"
+    "github.com/kandoo/beehive/Godeps/_workspace/src/golang.org/x/net/context"
 )
 
 // Router is the main handler of the routing application.
@@ -72,8 +73,8 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
         // FIXME: Hardcoding the hardware address at the moment
         srck := src_ip.String()
-        _, src_err := d.Get(srck)
-        if src_err != nil {
+        _, ok := d[srck]
+        if ok != true {
             fmt.Printf("Router: Error retrieving hosts %v\n", src_ip)
         }
 
@@ -85,8 +86,8 @@ func (r RouterIP) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
         sn := in.Node
 
         dstk := dst_ip.String()
-        dst_port, dst_err := d.Get(dstk)
-        if  dst_err != nil {
+        dst_port, dst_err := d[dstk]
+        if  dst_err != true {
             fmt.Printf("Router: Cant find dest node %v\n", dstk)
             res, reply_err := bh.Sync(context.TODO(), areaQuery{dst_ip, src_ip})
             if reply_err!= nil{
