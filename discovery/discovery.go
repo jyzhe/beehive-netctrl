@@ -204,7 +204,6 @@ func (h *pktInHandler) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 		State: nom.LinkStateUp,
 	}
 	ctx.Emit(NewLink(l))
-
 	return nil
 }
 
@@ -216,8 +215,6 @@ func (h *pktInHandler) Map(msg bh.Msg, ctx bh.MapContext) bh.MappedCells {
 
 type NewLink nom.Link
 
-type RegisterBorderNode nom.Link
-
 type newLinkHandler struct{}
 
 func (h *newLinkHandler) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
@@ -227,9 +224,9 @@ func (h *newLinkHandler) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 	k := string(n)
 	v, err := d.Get(k)
 	if err != nil {
-		// ctx.Emit(RegisterBorderNode(l))
 		return nil
 	}
+
 	np := v.(nodePortsAndLinks)
 
 	if oldl, ok := np.linkFrom(l.From); ok {

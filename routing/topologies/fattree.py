@@ -86,7 +86,7 @@ class MultiSwitch(OVSSwitch):
 
 
     def start(self, controllers):
-        self.init_map(controllers)
+        self.init_map(controllers[1:])
         return OVSSwitch.start(self, [self.map[self.name]])
 
 def start_mininet():
@@ -100,11 +100,10 @@ def start_mininet():
     net = Mininet(topo=fattree, switch=MultiSwitch, build=False,
                   autoSetMacs=True, autoStaticArp=True)
 
+    net.addController(c2)
 
     for c in [c0, c1]:
         net.addController(c)
-
-    net.addController(c2)
 
     net.build()
     net.start()
