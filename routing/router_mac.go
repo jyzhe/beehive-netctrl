@@ -15,8 +15,8 @@ type RouterMAC struct{
     discovery.GraphBuilderCentralized
 }
 const (
-    areaTonode = 'areaTonode' // AreaID mapping to a node map!, areaID -> map[node's mac] port UID
-    borderNode = 'bordernode' // AreaID mapping to a list of node!, areaID -> map list of node
+    areaTonode = "areaTonode" // AreaID mapping to a node map!, areaID -> map[node's mac] port UID
+    borderNode = "bordernode" // AreaID mapping to a list of node!, areaID -> map list of node
 
 
 )
