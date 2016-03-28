@@ -58,7 +58,8 @@ func (r Router) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
         fmt.Println("HERE")
         return nil
     case setupArea:
-        return registerEndhostsMAC(ctx,)
+        areaNum:= msg.Data().(setupArea)
+        return registerEndhostsMAC(ctx,areaNum.area)
     case nom.LinkAdded:
         return r.GraphBuilderCentralized.Rcv(msg, ctx)
     case nom.LinkDeleted:
@@ -221,21 +222,6 @@ func (r Router) Map(msg bh.Msg, ctx bh.MapContext) bh.MappedCells {
     }
 
     return bh.MappedCells{{"__D__", "__0__"}}
-    //"__D__" , "__0__" is the master controller
-    //case nom.LinkAdded: {__D__, __0__} , {areaTonode, }
-
-    // switch dm := msg.Data().(type) {
-    // case nom.LinkAdded:
-    //  from := dm.From
-    //  n, _ := nom.ParsePortUID(from)
-    //  return bh.MappedCells{{"N", string(n)}}
-    // case nom.LinkDeleted:
-    //  from := dm.From
-    //  n, _ := nom.ParsePortUID(from)
-    //  return bh.MappedCells{{"N", string(n)}}
-    // default:
-    //  return bh.MappedCells{{"N", string(msg.Data().(nom.PacketIn).Node)}}
-    // }
 }
 
 func InstallRouterMAC(h bh.Hive, opts ...bh.AppOption) {
@@ -287,7 +273,5 @@ func registerEndhostsMAC(ctx bh.RcvContext, area string){
 
 
     return nil
-
-}
 
 }
