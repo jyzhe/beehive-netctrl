@@ -43,8 +43,7 @@ func main() {
     // or a hub:
     // switching.RegisterHub(h, bh.NonTransactional())
 
-    routing.InstallRouterMAC(h, bh.Persistent(1))
-    h.emit(routing.setupArea{'2'})
+    routing.InstallR1(h, bh.Persistent(1))
     // routing.InstallLoadBalancer(h, bh.Persistent(1))
     // routing.InstallRouterIP(h,  bh.Persistent(1))
     h.Start()
