@@ -162,7 +162,6 @@ func (r RouterM) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
                 InterAreaLinkAdded(link, ctx)
             }
         }
-        return r.GraphBuilderCentralized.Rcv(msg, ctx)
     case nom.LinkDeleted:
         return r.GraphBuilderCentralized.Rcv(msg, ctx)
     default:
