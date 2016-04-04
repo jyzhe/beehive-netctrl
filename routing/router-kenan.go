@@ -205,18 +205,20 @@ func (r RouterM) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
         if sn != nom.UID(dn) {
 
-            paths, shortest_len := discovery.ShortestPathCentralized(sn, nom.UID(dn), ctx)
-            fmt.Printf("Router: Path between %v and %v returns %v, %v\n", sn, nom.UID(dn), paths, shortest_len)
+            paths, _ := discovery.ShortestPathCentralized(sn, nom.UID(dn), ctx)
+            opt_path := paths[0]
+            min_load := calculate_load(ctx, paths[0])
+            for _, path := range paths[1:] {
 
-            for _, path := range paths {
-                if len(path) != shortest_len {
-                    continue
-                } else {
-
-                    p = path[0].From
-                    break
+                load := calculate_load(ctx, path)
+                if load < min_load {
+                    opt_path = path
+                    min_load = load
                 }
             }
+
+            fmt.Printf("Load Balancer: Routing flow from %v to %v - %v, %v\n", sn, nom.UID(dn), opt_path, len(opt_path))
+            p = opt_path[0].From
         }
 
         // Forward flow entry
