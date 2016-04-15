@@ -16,8 +16,12 @@ const (
 	node2area     = "node2area"
 	ip2port       = "ip2port"
 	cDict 		  = "cDict"
+	tmpD = "@@"
+    GraphDict =  "NetGraph"
 )
-
+type setupM struct{
+    area string
+}
 type setup struct{}
 type area_setup struct{}
 
@@ -291,7 +295,7 @@ func InstallR1(h bh.Hive, opts ...bh.AppOption) {
 func InstallR2(h bh.Hive, opts ...bh.AppOption) {
 	c_init()
 	app := h.NewApp("Router", opts...)
-	controller := RouterM{}
+	controller := LoadBalancerM{}
 	app.Handle(InterAreaQuery{}, controller)
 	app.Handle(InterAreaLink{}, controller)
 	app.Handle(area_setup{}, controller)
@@ -316,6 +320,44 @@ func DstIP(p nom.Packet) nom.IPv4Addr {
 	return nom.IPv4Addr{p[30], p[31], p[32], p[33]}
 }
 
+func FindAreaId(ID string) string{ // This should take a node id, then return an area id. like 1 -> 1, a -> 2. return as string. Consider hardcoded.
+    if (ID == "1" || ID == "2" || ID == "3" || ID == "4" || ID == "5"){
+        return "1"
+    } else{
+        return "2"
+    }
+}
+func FindAreaIdMac(m nom.MACAddr)string{
+    a1 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x01}
+    a2 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x02}
+    a3 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x03}
+    a4 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x04}
+    if (m == a1 || m == a2 || m == a3 || m == a4 ){
+        return "1"
+    } else{
+        return "2"
+    }
+}
+
 func Key(ip nom.IPv4Addr) string {
 	return string(ip[:])
+}
+
+func InterAreaLinkAdded(link nom.Link, ctx bh.RcvContext) error{
+    dict := ctx.Dict(GraphDict)
+    nf, _ := nom.ParsePortUID(link.From)
+    nt, _ := nom.ParsePortUID(link.To)
+    fmt.Printf("Adding a link between %v and %v\n", string(nf), string(nt))
+    if nf == nt {
+        return fmt.Errorf("%v is a loop", link)
+    }
+
+    k := string(nf)
+    links := make(map[nom.UID][]nom.Link)
+    if v, err := dict.Get(k); err == nil {
+        links = v.(map[nom.UID][]nom.Link)
+    }
+    links[nt.UID()] = append(links[nt.UID()], link)
+
+    return dict.Put(k, links)
 }

@@ -14,51 +14,6 @@ import (
 type RouterM struct {
     discovery.GraphBuilderCentralized
 }
-type setupM struct{
-    area string
-}
-const (
-    tmpD = "@@"
-    GraphDict =  "NetGraph"
-)
-
-func FindAreaId(ID string) string{ // This should take a node id, then return an area id. like 1 -> 1, a -> 2. return as string. Consider hardcoded.
-    if (ID == "1" || ID == "2" || ID == "3" || ID == "4" || ID == "5"){
-        return "1"
-    } else{
-        return "2"
-    }
-}
-func FindAreaIdMac(m nom.MACAddr)string{
-    a1 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x01}
-    a2 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x02}
-    a3 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x03}
-    a4 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x04}
-    if (m == a1 || m == a2 || m == a3 || m == a4 ){
-        return "1"
-    } else{
-        return "2"
-    }
-}
-
-func InterAreaLinkAdded(link nom.Link, ctx bh.RcvContext) error{
-    dict := ctx.Dict(GraphDict)
-    nf, _ := nom.ParsePortUID(link.From)
-    nt, _ := nom.ParsePortUID(link.To)
-    fmt.Printf("Adding a link between %v and %v\n", string(nf), string(nt))
-    if nf == nt {
-        return fmt.Errorf("%v is a loop", link)
-    }
-
-    k := string(nf)
-    links := make(map[nom.UID][]nom.Link)
-    if v, err := dict.Get(k); err == nil {
-        links = v.(map[nom.UID][]nom.Link)
-    }
-    links[nt.UID()] = append(links[nt.UID()], link)
-
-    return dict.Put(k, links)
-}
 
 
 func (r RouterM) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
@@ -205,20 +160,18 @@ func (r RouterM) Rcv(msg bh.Msg, ctx bh.RcvContext) error {
 
         if sn != nom.UID(dn) {
 
-            paths, _ := discovery.ShortestPathCentralized(sn, nom.UID(dn), ctx)
-            opt_path := paths[0]
-            min_load := calculate_load(ctx, paths[0])
-            for _, path := range paths[1:] {
+            paths, shortest_len := discovery.ShortestPathCentralized(sn, nom.UID(dn), ctx)
+            fmt.Printf("Router: Path between %v and %v returns %v, %v\n", sn, nom.UID(dn), paths, shortest_len)
 
-                load := calculate_load(ctx, path)
-                if load < min_load {
-                    opt_path = path
-                    min_load = load
+            for _, path := range paths {
+                if len(path) != shortest_len {
+                    continue
+                } else {
+
+                    p = path[0].From
+                    break
                 }
             }
-
-            fmt.Printf("Load Balancer: Routing flow from %v to %v - %v, %v\n", sn, nom.UID(dn), opt_path, len(opt_path))
-            p = opt_path[0].From
         }
 
         // Forward flow entry
