@@ -41,9 +41,13 @@ func main() {
 		routing.InstallMasterC(h, bh.Persistent(1))
 	} else if *controllertype == "area1" {
 		routing.InstallR1(h, bh.Persistent(1))
-	} else {
+	} else if *controllertype == "area2"{
 		routing.InstallR2(h, bh.Persistent(1))
-	}
+    } else if *controllertype == "area3"{
+        routing.InstallR3(h, bh.Persistent(1))
+    } else if *controllertype == "area4"{
+        routing.InstallR4(h, bh.Persistent(1))
+    }
 
     // routing.InstallLoadBalancer(h, bh.Persistent(1))
     // routing.InstallRouterIP(h,  bh.Persistent(1))

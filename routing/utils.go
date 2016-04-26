@@ -167,7 +167,16 @@ func master_setup(ctx bh.RcvContext) error {
 		d.Put(strconv.Itoa(i), "2")
 	}
 	d.Put("a", "2")
-
+	d.Put("b","3")
+	d.Put("c","3")
+	d.Put("d","3")
+	d.Put("e","3")
+	d.Put("f","3")
+	d.Put("10","4")
+	d.Put("11","4")
+	d.Put("12","4")
+	d.Put("13","4")
+	d.Put("14","4")
 	d = ctx.Dict(mac2area)
 	a1 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x01}
 	d.Put(nom.MACAddr(a1).Key(), "1")
@@ -185,6 +194,22 @@ func master_setup(ctx bh.RcvContext) error {
 	d.Put(nom.MACAddr(a7).Key(), "2")
 	a8 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x08}
 	d.Put(nom.MACAddr(a8).Key(), "2")
+	a9 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x09}
+	d.Put(nom.MACAddr(a9).Key(), "3")
+	a10 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x0a}
+	d.Put(nom.MACAddr(a10).Key(), "3")
+	a11 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x0b}
+	d.Put(nom.MACAddr(a11).Key(), "3")
+	a12 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x0c}
+	d.Put(nom.MACAddr(a12).Key(), "3")
+	a13 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x0d}
+	d.Put(nom.MACAddr(a13).Key(), "4")
+	a14 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x0e}
+	d.Put(nom.MACAddr(a14).Key(), "4")
+	a15 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x0f}
+	d.Put(nom.MACAddr(a15).Key(), "4")
+	a16 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x10}
+	d.Put(nom.MACAddr(a16).Key(), "4")
 
 	fmt.Printf("Adding node to area in master controller\n")
 	return nil
@@ -239,7 +264,32 @@ func registerEndhostsAll(ctx bh.RcvContext, area string) error {
 		d.Put(nom.MACAddr(a8).Key(), nom.UID("a$$2"))
 		// d.Put("default", nom.UID("7$$3"))
 		fmt.Printf("ONLY ADDING POD 2\n")
+	}else if (area == "3"){
+		d := ctx.Dict(mac2port)
+		a9 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x09}
+		d.Put(nom.MACAddr(a9).Key(), nom.UID("e$$1"))
+		a10 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x0a}
+		d.Put(nom.MACAddr(a10).Key(), nom.UID("e$$2"))
+		a11 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x0b}
+		d.Put(nom.MACAddr(a11).Key(), nom.UID("f$$1"))
+		a12 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x0c}
+		d.Put(nom.MACAddr(a12).Key(), nom.UID("f$$2"))
+		// d.Put("default", nom.UID("7$$3"))
+		fmt.Printf("ONLY ADDING POD 3\n")
+	}else if (area == "4"){
+		d := ctx.Dict(mac2port)
+		a13 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x0d}
+		d.Put(nom.MACAddr(a13).Key(), nom.UID("13$$1"))
+		a14 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x0e}
+		d.Put(nom.MACAddr(a14).Key(), nom.UID("13$$2"))
+		a15 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x0f}
+		d.Put(nom.MACAddr(a15).Key(), nom.UID("14$$1"))
+		a16 := [6]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x10}
+		d.Put(nom.MACAddr(a16).Key(), nom.UID("14$$2"))
+		// d.Put("default", nom.UID("7$$3"))
+		fmt.Printf("ONLY ADDING POD 4\n")
 	}
+
 	return nil
 
 }
@@ -308,6 +358,40 @@ func InstallR2(h bh.Hive, opts ...bh.AppOption) {
 	fmt.Println("Installing Router 2")
 }
 
+func InstallR3(h bh.Hive, opts ...bh.AppOption) {
+	c_init()
+	app := h.NewApp("Router", opts...)
+	controller := LoadBalancerM{}
+	app.Handle(InterAreaQuery{}, controller)
+	app.Handle(InterAreaLink{}, controller)
+	app.Handle(area_setup{}, controller)
+	app.Handle(nom.LinkAdded{}, controller)
+	app.Handle(nom.LinkDeleted{}, controller)
+	app.Handle(setupM{}, controller)
+	app.Handle(nom.PacketIn{},controller)
+	go h.Emit(setupM{"3"})
+
+	fmt.Println("Installing Router 3")
+}
+
+func InstallR4(h bh.Hive, opts ...bh.AppOption) {
+	c_init()
+	app := h.NewApp("Router", opts...)
+	controller := LoadBalancerM{}
+	app.Handle(InterAreaQuery{}, controller)
+	app.Handle(InterAreaLink{}, controller)
+	app.Handle(area_setup{}, controller)
+	app.Handle(nom.LinkAdded{}, controller)
+	app.Handle(nom.LinkDeleted{}, controller)
+	app.Handle(setupM{}, controller)
+	app.Handle(nom.PacketIn{},controller)
+	go h.Emit(setupM{"4"})
+
+	fmt.Println("Installing Router 4")
+}
+
+
+
 func c_init(){
 	gob.Register(InterAreaLink{})
 	gob.Register(InterAreaQuery{})
@@ -323,8 +407,12 @@ func DstIP(p nom.Packet) nom.IPv4Addr {
 func FindAreaId(ID string) string{ // This should take a node id, then return an area id. like 1 -> 1, a -> 2. return as string. Consider hardcoded.
     if (ID == "1" || ID == "2" || ID == "3" || ID == "4" || ID == "5"){
         return "1"
-    } else{
+    } else if (ID == "6" || ID == "7" || ID == "8" || ID == "9" || ID == "a"){
         return "2"
+    } else if (ID == "b" || ID == "c" || ID == "d" || ID == "e" || ID == "f"){
+    	return "3"
+    } else{
+    	return "4"
     }
 }
 func FindAreaIdMac(m nom.MACAddr)string{

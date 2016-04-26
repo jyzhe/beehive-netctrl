@@ -80,7 +80,7 @@ class MultiSwitch(OVSSwitch):
     map = {}
 
     def init_map(self, controllers):
-        for i in range(2):
+        for i in range(4):
             for j in range(1, 6):
                 self.map["s%d"%(i * 5 + j)] = controllers[i]
 
@@ -91,18 +91,20 @@ class MultiSwitch(OVSSwitch):
 
 def start_mininet():
 
-    fattree = ThreeLayerTopo()
+    fattree = ThreeLayerTopo(k=4)
 
     c0 = RemoteController(name="beehive-netctrl", ip="127.0.0.1", port=6633)
     c1 = RemoteController(name="beehive-netctrl2", ip="127.0.0.1", port=6634)
-    c2 = RemoteController(name="beehive-master", ip="127.0.0.1", port=9080)
+    c2 = RemoteController(name="beehive-netctrl3", ip="127.0.0.1", port=6635)
+    c3 = RemoteController(name="beehive-netctrl4", ip="127.0.0.1", port=6636)
+    c4 = RemoteController(name="beehive-master", ip="127.0.0.1", port=9080)
 
     net = Mininet(topo=fattree, switch=MultiSwitch, build=False,
                   autoSetMacs=True, autoStaticArp=True)
 
-    net.addController(c2)
+    net.addController(c4)
 
-    for c in [c0, c1]:
+    for c in [c0, c1, c2, c3]:
         net.addController(c)
 
     net.build()
